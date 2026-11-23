@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { ArrowUpRight, Download, Mail } from "lucide-react";
+import { ArrowUpRight, Download, Eye, Mail } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "../components/SocialIcons";
 import "./style.css";
 import { origin, profile } from "./data";
@@ -10,10 +10,6 @@ import { MotionProvider } from "../components/MotionProvider";
 import { ThemeProvider } from "../components/ThemeProvider";
 import { ScrollParallaxBackdrop } from "../components/ScrollMotion";
 import { Navbar } from "../components/Navbar";
-import {
-  ResumeModalProvider,
-  ResumePreviewButton,
-} from "../components/ResumeModalProvider";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -125,14 +121,13 @@ export default function RootLayout({
         </a>
 
         <ThemeProvider>
-          <ResumeModalProvider>
-            <MotionProvider>
-              <ScrollParallaxBackdrop />
-              <Navbar />
-              {children}
+          <MotionProvider>
+            <ScrollParallaxBackdrop />
+            <Navbar />
+            {children}
 
-              <footer className="site-footer relative">
-                <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+            <footer className="site-footer relative">
+              <div className="mx-auto w-full max-w-[1680px] px-4 py-12 sm:px-8 lg:px-14 xl:px-20">
                   <div className="grid gap-10 md:grid-cols-12 md:items-start">
                     <div className="md:col-span-5">
                       <Link href="/" className="inline-flex items-center gap-3">
@@ -217,11 +212,13 @@ export default function RootLayout({
                             </Link>
                           </li>
                           <li>
-                            <ResumePreviewButton
-                              variant="link"
-                              label="Review Resume PDF"
-                              icon="eye"
-                            />
+                            <Link
+                              href="/resume"
+                              className="inline-flex items-center gap-1.5 font-medium text-sky-400 transition hover:text-sky-300"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              Review Resume PDF
+                            </Link>
                           </li>
                           <li>
                             <a
@@ -287,9 +284,8 @@ export default function RootLayout({
                     <span>&ldquo;{profile.quote}&rdquo;</span>
                   </div>
                 </div>
-              </footer>
-            </MotionProvider>
-          </ResumeModalProvider>
+            </footer>
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>

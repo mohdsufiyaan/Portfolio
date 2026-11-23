@@ -18,33 +18,33 @@ const ACCENT_HEX: Record<
   cyan: {
     dark: 0x38bdf8,
     light: 0x0284c7,
-    glowDark: "rgba(56, 189, 248, 0.22)",
-    glowLight: "rgba(2, 132, 199, 0.14)",
+    glowDark: "rgba(56, 189, 248, 0.17)",
+    glowLight: "rgba(2, 132, 199, 0.11)",
   },
   amber: {
     dark: 0xfb923c,
     light: 0xd97706,
-    glowDark: "rgba(251, 146, 60, 0.20)",
-    glowLight: "rgba(217, 119, 6, 0.14)",
+    glowDark: "rgba(251, 146, 60, 0.16)",
+    glowLight: "rgba(217, 119, 6, 0.11)",
   },
   emerald: {
     dark: 0x34d399,
     light: 0x059669,
-    glowDark: "rgba(52, 211, 153, 0.20)",
-    glowLight: "rgba(5, 150, 105, 0.14)",
+    glowDark: "rgba(52, 211, 153, 0.16)",
+    glowLight: "rgba(5, 150, 105, 0.11)",
   },
   violet: {
     dark: 0xa78bfa,
     light: 0x7c3aed,
-    glowDark: "rgba(167, 139, 250, 0.22)",
-    glowLight: "rgba(124, 58, 237, 0.14)",
+    glowDark: "rgba(167, 139, 250, 0.17)",
+    glowLight: "rgba(124, 58, 237, 0.11)",
   },
 };
 
 /**
  * Single shared Three.js WebGL renderer reused across whichever card is hovered.
- * Deforms a subdivided 3D PlaneGeometry downward at the hovered corner/side while
- * staying within a single WebGL context across 30+ cards on the page.
+ * Renders a subtle vertex-deformed 3D PlaneGeometry that gently bows down at the
+ * hovered corner/side without exceeding browser WebGL context limits.
  */
 class SharedBowMeshEngine {
   private renderer: THREE.WebGLRenderer | null = null;
@@ -76,10 +76,10 @@ class SharedBowMeshEngine {
       canvas.style.pointerEvents = "none";
 
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 20);
-      camera.position.set(0, 0, 3.85);
+      const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 20);
+      camera.position.set(0, 0, 4.1);
 
-      const geometry = new THREE.PlaneGeometry(2.3, 2.3, 18, 18);
+      const geometry = new THREE.PlaneGeometry(2.3, 2.3, 16, 16);
       const posAttr = geometry.attributes.position as THREE.BufferAttribute;
       this.basePositions = new Float32Array(posAttr.array.length);
       this.basePositions.set(posAttr.array);
@@ -88,13 +88,13 @@ class SharedBowMeshEngine {
         color: 0x38bdf8,
         wireframe: true,
         transparent: true,
-        opacity: 0.16,
+        opacity: 0.09,
       });
 
       const fillMat = new THREE.MeshBasicMaterial({
         color: 0x38bdf8,
         transparent: true,
-        opacity: 0.035,
+        opacity: 0.02,
         side: THREE.DoubleSide,
       });
 
@@ -141,8 +141,8 @@ class SharedBowMeshEngine {
     const hex = isDark ? ACCENT_HEX[accent].dark : ACCENT_HEX[accent].light;
     this.wireMat.color.setHex(hex);
     this.fillMat.color.setHex(hex);
-    this.wireMat.opacity = isDark ? 0.16 : 0.12;
-    this.fillMat.opacity = isDark ? 0.035 : 0.025;
+    this.wireMat.opacity = isDark ? 0.09 : 0.065;
+    this.fillMat.opacity = isDark ? 0.02 : 0.014;
   }
 
   renderDeformed(
@@ -169,21 +169,22 @@ class SharedBowMeshEngine {
     const arr = pos.array as Float32Array;
     const base = this.basePositions;
 
-    const targetX = nx * 1.12;
-    const targetY = -ny * 1.12;
+    const targetX = nx * 1.1;
+    const targetY = -ny * 1.1;
 
+    // Gentle vertex bow around hovered corner/side
     for (let i = 0; i < arr.length; i += 3) {
       const bx = base[i];
       const by = base[i + 1];
       const dx = bx - targetX;
       const dy = by - targetY;
       const distSq = dx * dx + dy * dy;
-      const bowFalloff = Math.exp(-distSq * 1.35);
-      arr[i + 2] = (-0.34 * bowFalloff + 0.06 * (1 - bowFalloff)) * intensity;
+      const bowFalloff = Math.exp(-distSq * 1.45);
+      arr[i + 2] = (-0.15 * bowFalloff + 0.025 * (1 - bowFalloff)) * intensity;
     }
     pos.needsUpdate = true;
 
-    this.meshGroup.rotation.set(rotX * 0.7, rotY * 0.7, 0);
+    this.meshGroup.rotation.set(rotX * 0.55, rotY * 0.55, 0);
     const scaleX = Math.max(this.camera.aspect, 1);
     const scaleY =
       this.camera.aspect < 1 ? 1 / Math.max(this.camera.aspect, 0.4) : 1;
@@ -217,12 +218,15 @@ export function ThreeBowCard({
   children,
   className = "",
   accent = "cyan",
-  maxTilt = 6.5,
+  maxTilt = 2.6,
   disabled = false,
 }: ThreeBowCardProps) {
   const { theme } = useTheme();
   const isDarkRef = useRef(theme === "dark");
   isDarkRef.current = theme === "dark";
+
+  // Keep the corner-bow refined & subtle across all card sizes (capped at ~3deg)
+  const refinedTilt = Math.min(maxTilt * 0.42, 3.0);
 
   const surfaceRef = useRef<HTMLDivElement>(null);
   const webglSlotRef = useRef<HTMLDivElement>(null);
@@ -271,29 +275,29 @@ export function ThreeBowCard({
     const targetNx = st.hovered ? st.targetNx : 0;
     const targetNy = st.hovered ? st.targetNy : 0;
 
-    st.nx = THREE.MathUtils.damp(st.nx, targetNx, 11, dt);
-    st.ny = THREE.MathUtils.damp(st.ny, targetNy, 11, dt);
-    st.intensity = THREE.MathUtils.damp(st.intensity, targetIntensity, 10, dt);
+    st.nx = THREE.MathUtils.damp(st.nx, targetNx, 10, dt);
+    st.ny = THREE.MathUtils.damp(st.ny, targetNy, 10, dt);
+    st.intensity = THREE.MathUtils.damp(st.intensity, targetIntensity, 9, dt);
 
-    // Corner-bow physics: hovered corner/side dips DOWN (-Z) into the plane
-    const maxRad = THREE.MathUtils.degToRad(maxTilt);
+    // Subtle corner-bow physics: hovered corner/side gently dips inward (-Z)
+    const maxRad = THREE.MathUtils.degToRad(refinedTilt);
     const rx = -st.ny * maxRad * st.intensity;
     const ry = st.nx * maxRad * st.intensity;
 
     const edgeMag = Math.min(1, Math.hypot(st.nx, st.ny));
-    const pressZ = -(2.5 + edgeMag * 5.5) * st.intensity;
-    const bowScale = 1 - 0.008 * st.intensity;
+    const pressZ = -(0.8 + edgeMag * 2.1) * st.intensity;
+    const bowScale = 1 - 0.003 * st.intensity;
 
     st.euler.set(rx, ry, 0, "XYZ");
     st.targetQuat.setFromEuler(st.euler);
-    st.currentQuat.slerp(st.targetQuat, Math.min(1, dt * 14));
+    st.currentQuat.slerp(st.targetQuat, Math.min(1, dt * 12));
 
     st.posVec.set(0, 0, pressZ);
     st.scaleVec.set(bowScale, bowScale, 1);
     st.matrix.compose(st.posVec, st.currentQuat, st.scaleVec);
 
     const m = st.matrix.elements;
-    el.style.transform = `perspective(1050px) matrix3d(${m[0].toFixed(5)},${m[1].toFixed(5)},${m[2].toFixed(5)},${m[3].toFixed(5)},${m[4].toFixed(5)},${m[5].toFixed(5)},${m[6].toFixed(5)},${m[7].toFixed(5)},${m[8].toFixed(5)},${m[9].toFixed(5)},${m[10].toFixed(5)},${m[11].toFixed(5)},${m[12].toFixed(3)},${m[13].toFixed(3)},${m[14].toFixed(3)},${m[15].toFixed(5)})`;
+    el.style.transform = `perspective(1400px) matrix3d(${m[0].toFixed(5)},${m[1].toFixed(5)},${m[2].toFixed(5)},${m[3].toFixed(5)},${m[4].toFixed(5)},${m[5].toFixed(5)},${m[6].toFixed(5)},${m[7].toFixed(5)},${m[8].toFixed(5)},${m[9].toFixed(5)},${m[10].toFixed(5)},${m[11].toFixed(5)},${m[12].toFixed(3)},${m[13].toFixed(3)},${m[14].toFixed(3)},${m[15].toFixed(5)})`;
 
     if (glowEl) {
       const px = ((st.nx + 1) * 50).toFixed(1);
@@ -302,11 +306,11 @@ export function ThreeBowCard({
         ? ACCENT_HEX[accent].glowDark
         : ACCENT_HEX[accent].glowLight;
       glowEl.style.opacity = st.intensity.toFixed(3);
-      glowEl.style.background = `radial-gradient(420px circle at ${px}% ${py}%, ${glowColor}, transparent 66%)`;
+      glowEl.style.background = `radial-gradient(380px circle at ${px}% ${py}%, ${glowColor}, transparent 66%)`;
     }
 
     if (slot) {
-      slot.style.opacity = (st.intensity * 0.92).toFixed(3);
+      slot.style.opacity = (st.intensity * 0.85).toFixed(3);
       if (st.intensity > 0.015) {
         sharedBowEngine.renderDeformed(slot, st.nx, st.ny, st.intensity, rx, ry);
       }

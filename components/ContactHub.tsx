@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   ArrowUpRight,
   Check,
@@ -14,10 +15,8 @@ import {
 import { GitHubIcon, LinkedInIcon } from "./SocialIcons";
 import { profile } from "../app/data";
 import { SpotlightCard } from "./Reveal";
-import { useResumeModal } from "./ResumeModalProvider";
 
 export function ContactHub() {
-  const { openResume } = useResumeModal();
   const [copiedField, setCopiedField] = useState<"email" | "phone" | null>(null);
 
   const copyValue = async (text: string, field: "email" | "phone") => {
@@ -84,14 +83,13 @@ export function ContactHub() {
               Email Mohd Sufiyan
               <ArrowUpRight className="h-4 w-4" />
             </a>
-            <button
-              type="button"
-              onClick={openResume}
+            <Link
+              href="/resume"
               className="btn-cool-secondary inline-flex min-h-[46px] items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
             >
               <Eye className="h-4 w-4 text-sky-400" />
-              Preview Resume
-            </button>
+              Review Resume
+            </Link>
             <a
               href={profile.resumePath}
               download="Mohd_Sufiyan_Resume.pdf"

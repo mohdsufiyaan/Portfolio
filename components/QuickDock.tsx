@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -19,7 +20,6 @@ import {
 } from "lucide-react";
 import { profile, projects } from "../app/data";
 import { useTheme } from "./ThemeProvider";
-import { useResumeModal } from "./ResumeModalProvider";
 import { setSmoothScrollLocked, smoothScrollTo } from "./SmoothScroll";
 
 interface CommandItem {
@@ -34,7 +34,6 @@ export function QuickDock() {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-  const { openResume } = useResumeModal();
 
   const [showTop, setShowTop] = useState(false);
   const [open, setOpen] = useState(false);
@@ -119,13 +118,13 @@ export function QuickDock() {
     const actions: CommandItem[] = [
       {
         id: "a-resume-preview",
-        label: "Preview Resume PDF (In-App Viewer)",
+        label: "Open Interactive Resume PDF Studio (/resume)",
         group: "Quick Actions",
-        hint: "Preview",
+        hint: "/resume",
         run: () => {
           setOpen(false);
           setQuery("");
-          openResume();
+          router.push("/resume");
         },
       },
       {
@@ -168,7 +167,7 @@ export function QuickDock() {
     ];
 
     return [...actions, ...sections, ...caseStudies];
-  }, [openResume, pathname, router, theme, toggleTheme]);
+  }, [pathname, router, theme, toggleTheme]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -200,15 +199,14 @@ export function QuickDock() {
 
       {/* Floating Bottom-Right Control Dock */}
       <div className="fixed bottom-5 right-5 z-40 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={openResume}
-          aria-label="Open in-app Resume PDF preview"
+        <Link
+          href="/resume"
+          aria-label="Open interactive Resume PDF Studio"
           className="btn-cool-secondary inline-flex h-11 items-center gap-2 rounded-2xl px-3.5 font-mono text-xs font-semibold shadow-lg"
         >
           <Eye className="h-3.5 w-3.5 text-sky-400" />
           <span className="hidden md:inline">Resume</span>
-        </button>
+        </Link>
 
         <button
           type="button"

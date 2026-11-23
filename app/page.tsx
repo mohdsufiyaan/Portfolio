@@ -6,6 +6,7 @@ import {
   Briefcase,
   Cpu,
   Download,
+  Eye,
   GraduationCap,
   MapPin,
   Shield,
@@ -41,7 +42,6 @@ import { D3ArchitectureBlueprints } from "../components/D3ArchitectureBlueprints
 import { D3GitHubShowcase } from "../components/D3GitHubShowcase";
 import { ArchitectureShowcase } from "../components/ArchitectureShowcase";
 import { ContactHub } from "../components/ContactHub";
-import { ResumePreviewButton } from "../components/ResumeModalProvider";
 
 export const revalidate = 3600;
 
@@ -49,8 +49,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-// Unified, balanced architectural grid width matching Navbar & Footer (1280px max)
-const CONTAINER = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
+// Fluid full-width container for all page sections (while keeping Navbar header at max-w-7xl)
+const CONTAINER =
+  "mx-auto w-full max-w-[1680px] px-4 sm:px-8 lg:px-14 xl:px-20";
 
 export default async function HomePage() {
   const githubData = await getGitHubPortfolioData();
@@ -217,11 +218,13 @@ export default async function HomePage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
 
-                <ResumePreviewButton
-                  label="Review Resume PDF"
-                  variant="secondary"
-                  icon="eye"
-                />
+                <Link
+                  href="/resume"
+                  className="btn-cool-secondary inline-flex min-h-[46px] items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
+                >
+                  <Eye className="h-4 w-4 text-sky-400" />
+                  Review Resume PDF
+                </Link>
 
                 <a
                   href={profile.resumePath}

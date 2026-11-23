@@ -7,7 +7,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowUpRight, FileText, Menu, X } from "lucide-react";
 import { profile } from "../app/data";
 import { ThemeToggle } from "./ThemeToggle";
-import { useResumeModal } from "./ResumeModalProvider";
 import { smoothScrollTo } from "./SmoothScroll";
 
 const navItems = [
@@ -22,7 +21,6 @@ const navItems = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const { openResume } = useResumeModal();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeId, setActiveId] = useState<string>("");
@@ -170,16 +168,16 @@ export function Navbar() {
 
         <div className="hidden items-center gap-2 lg:flex">
           <ThemeToggle />
-          <button
-            type="button"
-            onClick={openResume}
+          <Link
+            href="/resume"
+            aria-current={activeId === "resume" ? "page" : undefined}
             className={`inline-flex min-h-[38px] items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold ${
               activeId === "resume" ? "btn-cool-primary" : "btn-cool-secondary"
             }`}
           >
             <FileText className="h-3.5 w-3.5 text-sky-400" />
             Resume
-          </button>
+          </Link>
           <Link
             href="/#contact"
             onClick={(e) => handleNavClick(e, "contact")}
@@ -239,17 +237,16 @@ export function Navbar() {
               })}
             </nav>
             <div className="mt-3 flex flex-col gap-2 border-t border-white/[0.08] pt-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileOpen(false);
-                  openResume();
-                }}
-                className="btn-cool-secondary inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold"
+              <Link
+                href="/resume"
+                onClick={() => setMobileOpen(false)}
+                className={`inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${
+                  activeId === "resume" ? "btn-cool-primary" : "btn-cool-secondary"
+                }`}
               >
                 <FileText className="h-4 w-4 text-sky-400" />
-                Preview Resume PDF
-              </button>
+                Review Resume PDF
+              </Link>
               <Link
                 href="/#contact"
                 onClick={(e) => handleNavClick(e, "contact")}

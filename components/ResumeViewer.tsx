@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  BookOpen,
   Check,
   ChevronLeft,
   ChevronRight,
+  Columns2,
   Copy,
   Download,
   ExternalLink,
@@ -28,29 +30,38 @@ import {
   ZoomOut,
 } from "lucide-react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
-import { heroMetrics, profile } from "../app/data";
+import { profile } from "../app/data";
 import { useTheme } from "./ThemeProvider";
 
-interface ResumeViewerProps {
-  onClose?: () => void;
-  embedded?: boolean;
-}
+type PaperMode = "paper" | "sepia" | "night";
+type ViewLayout = "continuous" | "single" | "spread";
 
-const QUICK_SEARCH_TERMS = ["Laravel", "Node.js", "RAG", "Redis", "AWS", "Next.js"];
+const QUICK_SEARCH_TERMS = [
+  "Laravel",
+  "Node.js",
+  "Next.js",
+  "RAG",
+  "Pinecone",
+  "Redis",
+  "Socket.IO",
+  "AWS",
+];
+
+const ZOOM_PRESETS = [0.75, 1.0, 1.25, 1.5];
 
 function PdfPageCanvas({
   pdfDoc,
   pageNumber,
   scale,
   rotation,
-  nightPaper,
+  paperMode,
   highlightMatch,
 }: {
   pdfDoc: PDFDocumentProxy;
   pageNumber: number;
   scale: number;
   rotation: number;
-  nightPaper: boolean;
+  paperMode: PaperMode;
   highlightMatch: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -107,6 +118,13 @@ function PdfPageCanvas({
     };
   }, [pdfDoc, pageNumber, scale, rotation]);
 
+  const filterClass =
+    paperMode === "night"
+      ? "invert-[0.88] hue-rotate-180 contrast-[0.94]"
+      : paperMode === "sepia"
+        ? "sepia-[0.26] contrast-[0.97] brightness-[0.98]"
+        : "";
+
   return (
     <div
       className={`relative mx-auto w-fit overflow-hidden rounded-2xl border transition-all ${
@@ -117,9 +135,7 @@ function PdfPageCanvas({
     >
       <canvas
         ref={canvasRef}
-        className={`block bg-white transition-[filter] duration-200 ${
-          nightPaper ? "invert-[0.88] hue-rotate-180 contrast-[0.94]" : ""
-        }`}
+        className={`block bg-white transition-[filter] duration-200 ${filterClass}`}
       />
       {rendering && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-900/20 backdrop-blur-[1px]">
@@ -187,14 +203,14 @@ function PdfThumbnail({
           </span>
         )}
       </div>
-      <span className="mt-1.5 font-mono text-[11px] font-semibold text-slate-300">
+      <span className="mt-1.5 font-mono text-xs font-semibold text-slate-300">
         Page {pageNumber}
       </span>
     </button>
   );
 }
 
-export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
+export function ResumeViewer() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
@@ -211,19 +227,21 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
 
   const [scale, setScale] = useState(1.15);
   const [rotation, setRotation] = useState(0);
-  const [viewMode, setViewMode] = useState<"continuous" | "single">("continuous");
+  const [viewLayout, setViewLayout] = useState<ViewLayout>("continuous");
   const [showSidebar, setShowSidebar] = useState(true);
-  const [nightPaper, setNightPaper] = useState(false);
+  const [paperMode, setPaperMode] = useState<PaperMode>("paper");
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const [pageTexts, setPageTexts] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedState, setCopiedState] = useState<string | null>(null);
 
-  // Load PDF via pdfjs-dist and extract searchable plain text
   useEffect(() => {
     let mounted = true;
-    let loadingTask: { promise: Promise<PDFDocumentProxy>; destroy: () => Promise<void> } | null = null;
+    let loadingTask: {
+      promise: Promise<PDFDocumentProxy>;
+      destroy: () => Promise<void>;
+    } | null = null;
 
     async function loadPdf() {
       setLoading(true);
@@ -242,18 +260,16 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
         setNumPages(doc.numPages);
         setCurrentPage(1);
 
-        // Compute optimal initial fit-to-width scale
         const firstPage = await doc.getPage(1);
         const baseViewport = firstPage.getViewport({ scale: 1 });
-        const stageWidth = stageRef.current?.clientWidth ?? 860;
-        const targetW = Math.min(Math.max(stageWidth - 64, 300), 860);
-        const fitScale = Math.max(0.65, Math.min(1.5, targetW / baseViewport.width));
+        const stageWidth = stageRef.current?.clientWidth ?? 900;
+        const targetW = Math.min(Math.max(stageWidth - 64, 300), 920);
+        const fitScale = Math.max(0.65, Math.min(1.55, targetW / baseViewport.width));
         if (mounted) {
           setScale(Number(fitScale.toFixed(2)));
           setLoading(false);
         }
 
-        // Extract text across all pages for instant in-PDF search & copy
         const extracted: string[] = [];
         for (let p = 1; p <= doc.numPages; p++) {
           const pg = await doc.getPage(p);
@@ -281,7 +297,6 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
     };
   }, []);
 
-  // Collapse sidebar by default on small screens
   useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
       setShowSidebar(false);
@@ -293,12 +308,14 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
     try {
       const page = await pdfDoc.getPage(currentPage);
       const vp = page.getViewport({ scale: 1, rotation });
-      const avail = Math.max(stageRef.current.clientWidth - 56, 280);
-      setScale(Number(Math.max(0.55, Math.min(2.2, avail / vp.width)).toFixed(2)));
+      const avail = Math.max(stageRef.current.clientWidth - 64, 280);
+      const divisor = viewLayout === "spread" && numPages > 1 ? 2.08 : 1;
+      const ratio = avail / (vp.width * divisor);
+      setScale(Number(Math.max(0.55, Math.min(2.2, ratio)).toFixed(2)));
     } catch {
       /* ignore */
     }
-  }, [pdfDoc, currentPage, rotation]);
+  }, [pdfDoc, currentPage, rotation, viewLayout, numPages]);
 
   const fitToPage = useCallback(async () => {
     if (!pdfDoc || !stageRef.current) return;
@@ -306,7 +323,7 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
       const page = await pdfDoc.getPage(currentPage);
       const vp = page.getViewport({ scale: 1, rotation });
       const availW = Math.max(stageRef.current.clientWidth - 56, 280);
-      const availH = Math.max(stageRef.current.clientHeight - 48, 360);
+      const availH = Math.max(stageRef.current.clientHeight - 56, 400);
       const ratio = Math.min(availW / vp.width, availH / vp.height);
       setScale(Number(Math.max(0.5, Math.min(2.0, ratio)).toFixed(2)));
     } catch {
@@ -318,45 +335,64 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
     (pageNum: number) => {
       const clamped = Math.max(1, Math.min(numPages || 1, pageNum));
       setCurrentPage(clamped);
-      if (viewMode === "continuous") {
+      if (viewLayout === "continuous") {
         pageRefs.current[clamped]?.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
       }
     },
-    [numPages, viewMode],
+    [numPages, viewLayout],
   );
 
-  // Search matches per page
-  const pageMatchCounts = useMemo(() => {
+  // Search matches + contextual snippet excerpts per page
+  const searchResults = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return pageTexts.map(() => 0);
-    return pageTexts.map((txt) => {
+    if (!q) {
+      return {
+        counts: pageTexts.map(() => 0),
+        snippets: [] as { page: number; excerpt: string }[],
+      };
+    }
+
+    const counts: number[] = [];
+    const snippets: { page: number; excerpt: string }[] = [];
+
+    pageTexts.forEach((txt, idx) => {
       const lower = txt.toLowerCase();
       let count = 0;
-      let idx = lower.indexOf(q);
-      while (idx !== -1) {
+      let pos = lower.indexOf(q);
+      while (pos !== -1) {
         count++;
-        idx = lower.indexOf(q, idx + q.length);
+        if (snippets.length < 6) {
+          const start = Math.max(0, pos - 34);
+          const end = Math.min(txt.length, pos + q.length + 54);
+          const excerpt =
+            (start > 0 ? "…" : "") +
+            txt.slice(start, end).replace(/\s+/g, " ").trim() +
+            (end < txt.length ? "…" : "");
+          snippets.push({ page: idx + 1, excerpt });
+        }
+        pos = lower.indexOf(q, pos + q.length);
       }
-      return count;
+      counts.push(count);
     });
+
+    return { counts, snippets };
   }, [pageTexts, searchQuery]);
 
   const totalMatches = useMemo(
-    () => pageMatchCounts.reduce((acc, n) => acc + n, 0),
-    [pageMatchCounts],
+    () => searchResults.counts.reduce((acc, n) => acc + n, 0),
+    [searchResults.counts],
   );
 
-  // Auto-jump to first page with search match
   useEffect(() => {
     if (!searchQuery.trim()) return;
-    const firstMatchIdx = pageMatchCounts.findIndex((c) => c > 0);
+    const firstMatchIdx = searchResults.counts.findIndex((c) => c > 0);
     if (firstMatchIdx !== -1) {
       goToPage(firstMatchIdx + 1);
     }
-  }, [searchQuery, pageMatchCounts, goToPage]);
+  }, [searchQuery, searchResults.counts, goToPage]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -368,11 +404,6 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
         e.preventDefault();
         searchInputRef.current?.focus();
         searchInputRef.current?.select();
-        return;
-      }
-
-      if (e.key === "Escape" && onClose && !inInput) {
-        onClose();
         return;
       }
 
@@ -388,12 +419,12 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
         e.preventDefault();
         void fitToWidth();
       } else if (e.key === "ArrowRight" || e.key === "PageDown") {
-        if (viewMode === "single") {
+        if (viewLayout === "single") {
           e.preventDefault();
           goToPage(currentPage + 1);
         }
       } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
-        if (viewMode === "single") {
+        if (viewLayout === "single") {
           e.preventDefault();
           goToPage(currentPage - 1);
         }
@@ -404,7 +435,7 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [currentPage, fitToWidth, goToPage, onClose, viewMode]);
+  }, [currentPage, fitToWidth, goToPage, viewLayout]);
 
   useEffect(() => {
     const onFsChange = () => {
@@ -453,42 +484,48 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
 
   const pagesToRender = useMemo(() => {
     if (!numPages) return [];
-    if (viewMode === "single") return [currentPage];
+    if (viewLayout === "single") return [currentPage];
     return Array.from({ length: numPages }, (_, i) => i + 1);
-  }, [numPages, viewMode, currentPage]);
+  }, [numPages, viewLayout, currentPage]);
+
+  const wordCount = useMemo(() => {
+    const joined = pageTexts.join(" ").trim();
+    if (!joined) return 0;
+    return joined.split(/\s+/).length;
+  }, [pageTexts]);
 
   return (
     <div
       ref={rootRef}
-      className={`glass-panel flex w-full flex-col overflow-hidden ${
-        embedded
-          ? "min-h-[82vh] rounded-3xl"
-          : "h-[92vh] max-h-[960px] max-w-[1340px] rounded-3xl shadow-2xl"
-      }`}
+      className="glass-panel flex min-h-[82vh] w-full flex-col overflow-hidden rounded-3xl"
     >
       {/* Top Studio Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.1] px-4 py-3 sm:px-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.1] px-4 py-3.5 sm:px-6">
         <div className="flex items-center gap-3">
           <span className="btn-cool-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-xl">
             <FileText className="h-4 w-4" />
           </span>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-sm font-semibold text-white sm:text-base">
-                {profile.name} — Resume PDF
+                Mohd_Sufiyan_Resume.pdf
               </h2>
-              <span className="chip-emerald hidden rounded-full px-2 py-0.5 font-mono text-[11px] font-medium sm:inline-flex">
-                In-App Preview
+              <span className="chip-emerald rounded-full px-2.5 py-0.5 font-mono text-[11px] font-medium">
+                PDF.js HiDPI Engine
               </span>
+              {wordCount > 0 && (
+                <span className="chip-neutral hidden rounded-full px-2.5 py-0.5 font-mono text-[11px] sm:inline-flex">
+                  {wordCount} words · {numPages} page{numPages > 1 ? "s" : ""}
+                </span>
+              )}
             </div>
             <p className="font-mono text-xs text-slate-400">
-              {profile.role} · {profile.experienceYears} Years ·{" "}
-              {numPages > 0 ? `${numPages} Page${numPages > 1 ? "s" : ""}` : "Loading PDF"}
+              Interactive Review · Search Keywords · Zoom · Rotate · Reading Modes
             </p>
           </div>
         </div>
 
-        {/* Primary Action Buttons */}
+        {/* Action Buttons */}
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
@@ -499,7 +536,7 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
               )
             }
             className="btn-cool-ghost inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-xs font-semibold"
-            title="Copy full resume text"
+            title="Copy full extracted resume text"
           >
             {copiedState === "resume-text" ? (
               <>
@@ -532,7 +569,7 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
             title="Open raw PDF in new tab"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            <span className="hidden lg:inline">New Tab</span>
+            <span className="hidden lg:inline">Raw PDF</span>
           </a>
 
           <a
@@ -557,23 +594,12 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
               <Maximize2 className="h-4 w-4" />
             )}
           </button>
-
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close resume preview"
-              className="btn-cool-secondary inline-flex h-9 w-9 items-center justify-center rounded-xl"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
         </div>
       </div>
 
       {/* Rich Feature Control Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-white/[0.08] px-4 py-2.5 sm:px-6">
-        {/* Left: Sidebar, Page Nav & View Mode */}
+        {/* Left: Sidebar, Page Nav & Layout Modes */}
         <div className="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
@@ -581,7 +607,7 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
             className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold ${
               showSidebar ? "btn-cool-primary" : "btn-cool-ghost"
             }`}
-            title="Toggle thumbnails & quick info rail"
+            title="Toggle thumbnails & search outline sidebar"
           >
             <PanelLeft className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Outline</span>
@@ -612,27 +638,42 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
                 <ChevronRight className="h-4 w-4" />
               </button>
 
-              <button
-                type="button"
-                onClick={() =>
-                  setViewMode((m) => (m === "continuous" ? "single" : "continuous"))
-                }
-                className="btn-cool-ghost inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 font-mono text-[11px] font-semibold"
-                title="Switch continuous scroll or single page mode"
-              >
-                <Layers className="h-3.5 w-3.5" />
-                {viewMode === "continuous" ? "Scroll" : "Single"}
-              </button>
+              <div className="mx-1 hidden h-4 w-px bg-slate-500/30 sm:block" />
+
+              {/* Layout Switcher: Scroll / Single / 2-Page Spread */}
+              <div className="flex items-center gap-1">
+                {(
+                  [
+                    ["continuous", "Scroll", Layers],
+                    ["single", "Single", FileText],
+                    ...(numPages > 1 ? [["spread", "Spread", Columns2]] : []),
+                  ] as [ViewLayout, string, typeof Layers][]
+                ).map(([mode, label, Icon]) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setViewLayout(mode)}
+                    className={`inline-flex h-8 items-center gap-1 rounded-lg px-2.5 font-mono text-[11px] font-semibold ${
+                      viewLayout === mode ? "btn-cool-primary" : "btn-cool-ghost"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    <span className="hidden md:inline">{label}</span>
+                  </button>
+                ))}
+              </div>
             </>
           )}
         </div>
 
-        {/* Center: Zoom, Fit, Rotate, Night Paper */}
+        {/* Center: Zoom, Presets, Fit, Rotate & Reading Paper Mode */}
         {!fallbackMode && (
           <div className="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
-              onClick={() => setScale((s) => Number(Math.max(0.55, s - 0.15).toFixed(2)))}
+              onClick={() =>
+                setScale((s) => Number(Math.max(0.55, s - 0.15).toFixed(2)))
+              }
               aria-label="Zoom out"
               className="btn-cool-ghost inline-flex h-8 w-8 items-center justify-center rounded-lg"
             >
@@ -643,12 +684,31 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
             </span>
             <button
               type="button"
-              onClick={() => setScale((s) => Number(Math.min(2.4, s + 0.15).toFixed(2)))}
+              onClick={() =>
+                setScale((s) => Number(Math.min(2.4, s + 0.15).toFixed(2)))
+              }
               aria-label="Zoom in"
               className="btn-cool-ghost inline-flex h-8 w-8 items-center justify-center rounded-lg"
             >
               <ZoomIn className="h-3.5 w-3.5" />
             </button>
+
+            <div className="hidden items-center gap-1 xl:flex">
+              {ZOOM_PRESETS.map((z) => (
+                <button
+                  key={z}
+                  type="button"
+                  onClick={() => setScale(z)}
+                  className={`h-8 rounded-lg px-2 font-mono text-[11px] font-semibold ${
+                    Math.abs(scale - z) < 0.04
+                      ? "btn-cool-primary"
+                      : "btn-cool-ghost"
+                  }`}
+                >
+                  {Math.round(z * 100)}%
+                </button>
+              ))}
+            </div>
 
             <button
               type="button"
@@ -675,67 +735,76 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
               <RotateCw className="h-3.5 w-3.5" />
             </button>
 
-            <button
-              type="button"
-              onClick={() => setNightPaper((n) => !n)}
-              aria-label={nightPaper ? "Standard paper view" : "Night reading paper filter"}
-              title={nightPaper ? "Standard Paper" : "Night Reading Mode"}
-              className={`inline-flex h-8 items-center gap-1 rounded-lg px-2.5 font-mono text-[11px] font-semibold ${
-                nightPaper ? "btn-cool-primary" : "btn-cool-ghost"
-              }`}
-            >
-              {nightPaper ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-              <span className="hidden lg:inline">{nightPaper ? "Paper" : "Night"}</span>
-            </button>
+            {/* 3-State Reading Filter: Paper / Sepia / Night */}
+            <div className="flex items-center gap-1">
+              {(
+                [
+                  ["paper", "Paper", Sun],
+                  ["sepia", "Sepia", BookOpen],
+                  ["night", "Night", Moon],
+                ] as [PaperMode, string, typeof Sun][]
+              ).map(([mode, label, Icon]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setPaperMode(mode)}
+                  title={`${label} reading mode`}
+                  className={`inline-flex h-8 items-center gap-1 rounded-lg px-2 font-mono text-[11px] font-semibold ${
+                    paperMode === mode ? "btn-cool-primary" : "btn-cool-ghost"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  <span className="hidden lg:inline">{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Right: In-PDF Instant Keyword Search */}
         {!fallbackMode && (
-          <div className="flex items-center gap-1.5">
-            <div className="surface-subcard flex h-8 items-center gap-1.5 rounded-lg px-2.5">
-              <Search className="h-3.5 w-3.5 shrink-0 text-sky-400" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search resume (Ctrl+F)..."
-                className="w-36 bg-transparent text-xs text-white placeholder:text-slate-400 focus:outline-none sm:w-44"
-              />
-              {searchQuery && (
-                <>
-                  <span className="font-mono text-[11px] font-semibold text-sky-400">
-                    {totalMatches}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery("")}
-                    aria-label="Clear search"
-                    className="text-slate-400 hover:text-white"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </>
-              )}
-            </div>
+          <div className="surface-subcard flex h-8 items-center gap-1.5 rounded-lg px-2.5">
+            <Search className="h-3.5 w-3.5 shrink-0 text-sky-400" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search resume (Ctrl+F)..."
+              className="w-36 bg-transparent text-xs text-white placeholder:text-slate-400 focus:outline-none sm:w-48"
+            />
+            {searchQuery && (
+              <>
+                <span className="font-mono text-xs font-semibold text-sky-400">
+                  {totalMatches}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Clear search"
+                  className="text-slate-400 hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
 
-      {/* Main Split Workspace: Left Thumbnails + Quick Info | Center PDF Stage */}
-      <div className="flex min-h-0 flex-1 overflow-hidden">
+      {/* Main Split Workspace */}
+      <div className="flex min-h-[70vh] flex-1 overflow-hidden">
         {showSidebar && (
           <aside
             data-lenis-prevent
-            className="flex w-64 shrink-0 flex-col gap-5 overflow-y-auto border-r border-white/[0.08] p-4"
+            className="flex max-h-[82vh] w-72 shrink-0 flex-col gap-5 overflow-y-auto border-r border-white/[0.08] p-4"
           >
-            {/* Quick Keyword Jump Chips */}
+            {/* Quick Skill Keyword Scanner */}
             {!fallbackMode && (
               <div>
-                <div className="mb-2 flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                <div className="mb-2 flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-slate-400">
                   <Sparkles className="h-3.5 w-3.5 text-sky-400" />
-                  Quick Keyword Check
+                  Skill Scanner
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {QUICK_SEARCH_TERMS.map((term) => {
@@ -746,7 +815,7 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
                         key={term}
                         type="button"
                         onClick={() => setSearchQuery(active ? "" : term)}
-                        className={`rounded-lg px-2.5 py-1 font-mono text-[11px] font-medium transition ${
+                        className={`rounded-lg px-2.5 py-1 font-mono text-xs font-medium transition ${
                           active ? "btn-cool-primary" : "btn-cool-ghost"
                         }`}
                       >
@@ -755,14 +824,44 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
                     );
                   })}
                 </div>
+
+                {/* Live Matched Context Excerpts */}
+                {searchQuery.trim() && (
+                  <div className="mt-3 space-y-2">
+                    <div className="font-mono text-[11px] font-semibold text-sky-400">
+                      {totalMatches} match{totalMatches === 1 ? "" : "es"} found
+                    </div>
+                    {searchResults.snippets.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {searchResults.snippets.map((snip, i) => (
+                          <button
+                            key={`${snip.page}-${i}`}
+                            type="button"
+                            onClick={() => goToPage(snip.page)}
+                            className="surface-subcard block w-full rounded-xl p-2.5 text-left text-xs leading-relaxed text-slate-300"
+                          >
+                            <span className="chip-accent mb-1 inline-block rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold">
+                              Page {snip.page}
+                            </span>
+                            <div className="line-clamp-3">{snip.excerpt}</div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400">
+                        No exact matches for &ldquo;{searchQuery}&rdquo;.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
             {/* Page Thumbnails */}
             {pdfDoc && numPages > 0 && (
               <div>
-                <div className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  Pages ({numPages})
+                <div className="mb-2 font-mono text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Page Thumbnails ({numPages})
                 </div>
                 <div className="space-y-2.5">
                   {Array.from({ length: numPages }, (_, idx) => idx + 1).map(
@@ -772,7 +871,7 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
                         pdfDoc={pdfDoc}
                         pageNumber={pg}
                         active={currentPage === pg}
-                        matchCount={pageMatchCounts[pg - 1] ?? 0}
+                        matchCount={searchResults.counts[pg - 1] ?? 0}
                         onSelect={() => goToPage(pg)}
                       />
                     ),
@@ -781,10 +880,10 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
               </div>
             )}
 
-            {/* Quick Recruiter Contact & Highlights */}
+            {/* Quick Copy Contact Info */}
             <div className="space-y-2 border-t border-white/[0.08] pt-4">
-              <div className="font-mono text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                Quick Contact
+              <div className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Direct Contact Copy
               </div>
               <button
                 type="button"
@@ -816,22 +915,6 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
                   <Copy className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                 )}
               </button>
-
-              <div className="grid grid-cols-2 gap-1.5 pt-2">
-                {heroMetrics.map((m) => (
-                  <div
-                    key={m.label}
-                    className="surface-subcard rounded-xl p-2 text-center"
-                  >
-                    <div className="font-mono text-xs font-bold text-white">
-                      {m.value}
-                    </div>
-                    <div className="mt-0.5 truncate text-[10px] text-slate-400">
-                      {m.label.split(" ").slice(0, 2).join(" ")}
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           </aside>
         )}
@@ -840,25 +923,31 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
         <div
           ref={stageRef}
           data-lenis-prevent
-          className={`relative flex-1 overflow-auto p-4 sm:p-6 ${
+          className={`relative max-h-[82vh] flex-1 overflow-auto p-4 sm:p-6 ${
             isDark ? "bg-[#04070f]" : "bg-slate-200/75"
           }`}
         >
           {loading ? (
-            <div className="flex h-full min-h-[380px] flex-col items-center justify-center gap-3">
+            <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-sky-500" />
               <p className="font-mono text-xs text-slate-400">
-                Rendering high-resolution resume preview...
+                Rendering high-resolution resume pages...
               </p>
             </div>
           ) : fallbackMode || !pdfDoc ? (
             <iframe
               src={`${profile.resumePath}#view=FitH`}
               title={`${profile.name} Resume PDF`}
-              className="h-full min-h-[640px] w-full rounded-2xl border border-white/10 bg-white"
+              className="h-full min-h-[680px] w-full rounded-2xl border border-white/10 bg-white"
             />
           ) : (
-            <div className="space-y-6 pb-8">
+            <div
+              className={
+                viewLayout === "spread"
+                  ? "grid gap-6 pb-8 xl:grid-cols-2"
+                  : "space-y-6 pb-8"
+              }
+            >
               {pagesToRender.map((pg) => (
                 <div
                   key={pg}
@@ -873,18 +962,18 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
                     pageNumber={pg}
                     scale={scale}
                     rotation={rotation}
-                    nightPaper={nightPaper}
-                    highlightMatch={(pageMatchCounts[pg - 1] ?? 0) > 0}
+                    paperMode={paperMode}
+                    highlightMatch={(searchResults.counts[pg - 1] ?? 0) > 0}
                   />
-                  <div className="mt-2 flex items-center justify-center gap-2 font-mono text-[11px] text-slate-400">
+                  <div className="mt-2.5 flex items-center justify-center gap-2 font-mono text-xs text-slate-400">
                     <span>
                       Page {pg} of {numPages}
                     </span>
-                    {(pageMatchCounts[pg - 1] ?? 0) > 0 && (
-                      <span className="chip-accent rounded-full px-2 py-0.5 text-[10px] font-semibold">
-                        {pageMatchCounts[pg - 1]} match
-                        {pageMatchCounts[pg - 1] === 1 ? "" : "es"} for &ldquo;
-                        {searchQuery}&rdquo;
+                    {(searchResults.counts[pg - 1] ?? 0) > 0 && (
+                      <span className="chip-accent rounded-full px-2 py-0.5 text-[11px] font-semibold">
+                        {searchResults.counts[pg - 1]} match
+                        {searchResults.counts[pg - 1] === 1 ? "" : "es"} for
+                        &ldquo;{searchQuery}&rdquo;
                       </span>
                     )}
                   </div>
@@ -896,7 +985,7 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
       </div>
 
       {/* Bottom Keyboard Shortcuts Hint */}
-      <div className="hidden items-center justify-between border-t border-white/[0.08] px-6 py-2 font-mono text-[11px] text-slate-400 sm:flex">
+      <div className="hidden items-center justify-between border-t border-white/[0.08] px-6 py-2.5 font-mono text-xs text-slate-400 sm:flex">
         <span className="inline-flex items-center gap-1.5">
           <Eye className="h-3.5 w-3.5 text-sky-400" />
           Shortcuts: <kbd className="chip-neutral rounded px-1.5 py-0.5">+</kbd> /{" "}
@@ -905,7 +994,7 @@ export function ResumeViewer({ onClose, embedded = false }: ResumeViewerProps) {
           <kbd className="chip-neutral rounded px-1.5 py-0.5">R</kbd> Rotate ·{" "}
           <kbd className="chip-neutral rounded px-1.5 py-0.5">Ctrl+F</kbd> Search
         </span>
-        <span>Mohd_Sufiyan_Resume.pdf</span>
+        <span>Updated Resume · {profile.name}</span>
       </div>
     </div>
   );

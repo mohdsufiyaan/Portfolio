@@ -8,6 +8,7 @@ import {
   Cpu,
   Download,
   ExternalLink,
+  Eye,
   Mail,
   Target,
   TrendingUp,
@@ -17,7 +18,6 @@ import { origin, profile, projects } from "../../data";
 import { ProjectDiagram } from "../../../components/ProjectDiagram";
 import { D3ArchitectureBlueprints } from "../../../components/D3ArchitectureBlueprints";
 import { TiltSpotlightCard } from "../../../components/ScrollMotion";
-import { ResumePreviewButton } from "../../../components/ResumeModalProvider";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -126,7 +126,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   return (
     <main
       id="main"
-      className="relative mx-auto w-full max-w-7xl px-4 pb-24 pt-28 sm:px-6 sm:pt-32 lg:px-8"
+      className="relative mx-auto w-full max-w-[1680px] px-4 pb-24 pt-28 sm:px-8 sm:pt-32 lg:px-14 xl:px-20"
     >
       <script
         type="application/ld+json"
@@ -182,7 +182,13 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             <Mail className="h-4 w-4 text-sky-400" />
             Discuss This Architecture
           </a>
-          <ResumePreviewButton label="Preview Resume" variant="secondary" />
+          <Link
+            href="/resume"
+            className="btn-cool-secondary inline-flex min-h-[44px] items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold"
+          >
+            <Eye className="h-4 w-4 text-sky-400" />
+            Review Resume
+          </Link>
           <a
             href={profile.resumePath}
             download="Mohd_Sufiyan_Resume.pdf"
