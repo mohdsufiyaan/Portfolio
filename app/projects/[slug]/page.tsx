@@ -17,6 +17,7 @@ import { origin, profile, projects } from "../../data";
 import { ProjectDiagram } from "../../../components/ProjectDiagram";
 import { D3ArchitectureBlueprints } from "../../../components/D3ArchitectureBlueprints";
 import { TiltSpotlightCard } from "../../../components/ScrollMotion";
+import { ResumePreviewButton } from "../../../components/ResumeModalProvider";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -125,7 +126,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   return (
     <main
       id="main"
-      className="relative mx-auto w-full max-w-[1600px] px-4 pb-24 pt-28 sm:px-8 sm:pt-32 lg:px-14 xl:px-20"
+      className="relative mx-auto w-full max-w-7xl px-4 pb-24 pt-28 sm:px-6 sm:pt-32 lg:px-8"
     >
       <script
         type="application/ld+json"
@@ -134,7 +135,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
       <Link
         href="/#projects"
-        className="inline-flex items-center gap-2 rounded-xl border border-white/[0.1] bg-slate-900/60 px-3.5 py-2 font-mono text-xs text-slate-300 transition hover:border-sky-400/40 hover:text-white"
+        className="btn-cool-secondary inline-flex items-center gap-2 rounded-xl px-4 py-2 font-mono text-xs font-semibold"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Back to Projects
@@ -142,11 +143,11 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
       {/* Header */}
       <div className="mt-8">
-        <div className="flex flex-wrap items-center gap-3 font-mono text-xs">
-          <span className="rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-sky-300">
+        <div className="flex flex-wrap items-center gap-2.5 font-mono text-xs">
+          <span className="chip-accent rounded-full px-3 py-1 font-medium">
             {project.category}
           </span>
-          <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-emerald-300">
+          <span className="chip-emerald rounded-full px-3 py-1 font-medium">
             {project.status}
           </span>
           <span className="text-slate-400">
@@ -154,11 +155,11 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </span>
         </div>
 
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
+        <h1 className="mt-4 text-3xl font-semibold tracking-[-0.02em] text-white sm:text-4xl lg:text-[2.75rem] lg:leading-[1.12]">
           {project.name}
         </h1>
 
-        <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate-300 sm:text-lg">
+        <p className="mt-4 max-w-[66ch] text-base leading-[1.7] text-slate-300 sm:text-lg">
           {project.summary}
         </p>
 
@@ -168,7 +169,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               href={project.liveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-cool-primary preserve-dark inline-flex min-h-[44px] items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold"
+              className="btn-cool-primary inline-flex min-h-[44px] items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold"
             >
               Visit Live Platform
               <ExternalLink className="h-4 w-4" />
@@ -176,18 +177,19 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           )}
           <a
             href={`mailto:${profile.email}?subject=${encodeURIComponent(`Regarding ${project.shortName}`)}`}
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-white/[0.14] bg-slate-900/75 px-5 py-2.5 text-sm font-medium text-white transition hover:border-sky-400/50"
+            className="btn-cool-secondary inline-flex min-h-[44px] items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold"
           >
             <Mail className="h-4 w-4 text-sky-400" />
             Discuss This Architecture
           </a>
+          <ResumePreviewButton label="Preview Resume" variant="secondary" />
           <a
             href={profile.resumePath}
-            download
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-white/[0.2] hover:text-white"
+            download="Mohd_Sufiyan_Resume.pdf"
+            className="btn-cool-ghost inline-flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold"
           >
             <Download className="h-4 w-4 text-sky-400" />
-            Resume PDF
+            Download PDF
           </a>
         </div>
       </div>
@@ -205,7 +207,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* Key Metrics */}
+      {/* Key Metrics (Three.js Corner-Bow Cards) */}
       <div
         className={`mt-8 grid gap-4 ${
           project.impactMetrics.length === 2
@@ -213,23 +215,25 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             : "sm:grid-cols-2 lg:grid-cols-4"
         }`}
       >
-        {project.impactMetrics.map((m) => (
-          <div
+        {project.impactMetrics.map((m, idx) => (
+          <TiltSpotlightCard
             key={m.label}
-            className="rounded-2xl border border-white/[0.08] bg-slate-950/70 p-4"
+            accent={idx % 2 === 0 ? "cyan" : "emerald"}
+            maxTilt={7}
+            className="rounded-2xl p-4"
           >
             <div className="font-mono text-xl font-bold text-white">
               {m.value}
             </div>
             <div className="mt-1 text-xs text-slate-400">{m.label}</div>
-          </div>
+          </TiltSpotlightCard>
         ))}
       </div>
 
-      {/* Deep Engineering Narrative: Challenge -> Solution -> Impact */}
+      {/* Deep Engineering Narrative */}
       <div className="mt-10 grid gap-5 md:grid-cols-3">
-        <TiltSpotlightCard accent="amber" maxTilt={3} className="rounded-2xl p-6">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-orange-300">
+        <TiltSpotlightCard accent="amber" maxTilt={5.5} className="rounded-2xl p-6">
+          <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-amber-400">
             <Target className="h-4 w-4" />
             Challenge
           </div>
@@ -238,8 +242,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </p>
         </TiltSpotlightCard>
 
-        <TiltSpotlightCard accent="cyan" maxTilt={3} className="rounded-2xl p-6">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-sky-300">
+        <TiltSpotlightCard accent="cyan" maxTilt={5.5} className="rounded-2xl p-6">
+          <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
             <Wrench className="h-4 w-4" />
             Engineering Solution
           </div>
@@ -248,8 +252,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </p>
         </TiltSpotlightCard>
 
-        <TiltSpotlightCard accent="emerald" maxTilt={3} className="rounded-2xl p-6">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-emerald-300">
+        <TiltSpotlightCard accent="emerald" maxTilt={5.5} className="rounded-2xl p-6">
+          <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-emerald-400">
             <TrendingUp className="h-4 w-4" />
             Verified Impact
           </div>
@@ -269,28 +273,36 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         </h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {project.deliveryStages.map((stage, idx) => (
-            <div
+            <TiltSpotlightCard
               key={stage.stage}
-              className="rounded-2xl border border-white/[0.08] bg-slate-950/65 p-4"
+              accent="cyan"
+              maxTilt={7}
+              className="rounded-2xl p-4"
             >
-              <div className="flex items-center justify-between font-mono text-[11px]">
-                <span className="text-sky-300">STAGE 0{idx + 1}</span>
-                <span className="text-emerald-400">Shipped</span>
+              <div className="flex items-center justify-between font-mono text-xs">
+                <span className="font-semibold text-sky-400">
+                  STAGE 0{idx + 1}
+                </span>
+                <span className="font-semibold text-emerald-400">Shipped</span>
               </div>
               <div className="mt-2 text-sm font-semibold text-white">
                 {stage.stage}
               </div>
-              <p className="mt-1.5 text-xs leading-relaxed text-slate-400">
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
                 {stage.detail}
               </p>
-            </div>
+            </TiltSpotlightCard>
           ))}
         </div>
       </section>
 
       {/* Architecture Highlight Callout */}
-      <TiltSpotlightCard accent="cyan" maxTilt={2.5} className="mt-10 rounded-3xl p-6 sm:p-8">
-        <div className="flex items-center gap-2.5 font-mono text-xs uppercase tracking-wider text-sky-300">
+      <TiltSpotlightCard
+        accent="cyan"
+        maxTilt={3.5}
+        className="mt-10 rounded-3xl p-6 sm:p-8"
+      >
+        <div className="flex items-center gap-2.5 font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
           <Cpu className="h-4 w-4" />
           Core Architectural Strategy
         </div>
@@ -311,7 +323,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           {project.contributions.map((point) => (
             <li
               key={point}
-              className="flex items-start gap-3.5 rounded-2xl border border-white/[0.08] bg-slate-950/60 p-4 text-sm leading-relaxed text-slate-200 sm:p-5 sm:text-base"
+              className="surface-subcard flex items-start gap-3.5 rounded-2xl p-4 text-sm leading-relaxed text-slate-200 sm:p-5 sm:text-base"
             >
               <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
               <span>{point}</span>
@@ -332,7 +344,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           {project.tech.map((t) => (
             <span
               key={t}
-              className="rounded-xl border border-sky-400/20 bg-sky-400/[0.08] px-3.5 py-1.5 font-mono text-xs text-sky-200"
+              className="chip-accent rounded-xl px-3.5 py-1.5 font-mono text-xs font-medium"
             >
               {t}
             </span>
@@ -342,20 +354,22 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
       {/* Next Case Study Navigation */}
       <div className="mt-16 border-t border-white/[0.08] pt-8">
-        <Link
-          href={`/projects/${nextProject.slug}`}
-          className="group flex items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-slate-950/70 p-6 transition hover:border-sky-400/40"
-        >
-          <div>
-            <div className="font-mono text-xs uppercase tracking-wider text-slate-400">
-              Next Case Study
+        <TiltSpotlightCard accent="cyan" maxTilt={3.5} className="rounded-2xl">
+          <Link
+            href={`/projects/${nextProject.slug}`}
+            className="group flex items-center justify-between gap-4 p-6"
+          >
+            <div>
+              <div className="font-mono text-xs uppercase tracking-wider text-slate-400">
+                Next Case Study
+              </div>
+              <div className="mt-1 text-lg font-semibold text-white transition group-hover:text-sky-400 sm:text-xl">
+                {nextProject.name}
+              </div>
             </div>
-            <div className="mt-1 text-lg font-semibold text-white transition group-hover:text-sky-300 sm:text-xl">
-              {nextProject.name}
-            </div>
-          </div>
-          <ArrowRight className="h-5 w-5 shrink-0 text-slate-400 transition group-hover:translate-x-1 group-hover:text-sky-300" />
-        </Link>
+            <ArrowRight className="h-5 w-5 shrink-0 text-slate-400 transition group-hover:translate-x-1 group-hover:text-sky-400" />
+          </Link>
+        </TiltSpotlightCard>
       </div>
     </main>
   );

@@ -38,6 +38,7 @@ function FeaturedProjectCard({
   return (
     <TiltSpotlightCard
       accent={accent}
+      maxTilt={spanFull ? 3.5 : 4.8}
       className={`flex flex-col rounded-3xl p-5 sm:p-7 ${
         spanFull ? "lg:col-span-2" : ""
       }`}
@@ -49,11 +50,11 @@ function FeaturedProjectCard({
 
         <div className={spanFull ? "lg:col-span-7" : ""}>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/35 bg-indigo-500/15 px-3 py-1 font-mono text-[11px] font-medium text-indigo-200">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="chip-accent inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-medium">
                 {project.category}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 font-mono text-[10px] text-emerald-300">
+              <span className="chip-emerald inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-xs">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 {project.status}
               </span>
@@ -83,10 +84,8 @@ function FeaturedProjectCard({
                   key={key}
                   type="button"
                   onClick={() => setTab(key)}
-                  className={`rounded-lg px-3 py-1.5 font-mono text-[11px] font-semibold transition ${
-                    isTabActive
-                      ? "btn-cool-primary preserve-dark"
-                      : "btn-cool-secondary"
+                  className={`rounded-lg px-3 py-1.5 font-mono text-xs font-semibold ${
+                    isTabActive ? "btn-cool-primary" : "btn-cool-secondary"
                   }`}
                 >
                   {label}
@@ -95,7 +94,7 @@ function FeaturedProjectCard({
             })}
           </div>
 
-          <p className="mt-3 min-h-[76px] text-sm leading-relaxed text-slate-300">
+          <p className="mt-3.5 min-h-[82px] text-sm leading-relaxed text-slate-300">
             {tabContent[tab]}
           </p>
 
@@ -108,12 +107,12 @@ function FeaturedProjectCard({
             {project.impactMetrics.map((m) => (
               <div
                 key={m.label}
-                className="rounded-xl border border-white/[0.07] bg-slate-950/65 px-3 py-2.5"
+                className="surface-subcard rounded-xl px-3.5 py-2.5"
               >
                 <div className="font-mono text-sm font-semibold text-white">
                   {m.value}
                 </div>
-                <div className="mt-0.5 text-[11px] text-slate-400">
+                <div className="mt-0.5 text-xs text-slate-400">
                   {m.label}
                 </div>
               </div>
@@ -122,17 +121,17 @@ function FeaturedProjectCard({
 
           {/* Stack Chips */}
           <div className="mt-5 flex flex-wrap gap-1.5">
-            {project.tech.slice(0, spanFull ? 11 : 8).map((t) => (
+            {project.tech.slice(0, spanFull ? 10 : 7).map((t) => (
               <span
                 key={t}
-                className="rounded-lg border border-white/[0.07] bg-white/[0.03] px-2.5 py-1 font-mono text-[11px] text-slate-300"
+                className="chip-neutral rounded-lg px-2.5 py-1 font-mono text-xs"
               >
                 {t}
               </span>
             ))}
-            {project.tech.length > (spanFull ? 11 : 8) && (
-              <span className="rounded-lg border border-white/[0.07] bg-white/[0.02] px-2.5 py-1 font-mono text-[11px] text-slate-400">
-                +{project.tech.length - (spanFull ? 11 : 8)} more
+            {project.tech.length > (spanFull ? 10 : 7) && (
+              <span className="chip-neutral rounded-lg px-2.5 py-1 font-mono text-xs opacity-75">
+                +{project.tech.length - (spanFull ? 10 : 7)} more
               </span>
             )}
           </div>
@@ -141,7 +140,7 @@ function FeaturedProjectCard({
           <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-white/[0.08] pt-5">
             <Link
               href={`/projects/${project.slug}`}
-              className="btn-cool-primary preserve-dark inline-flex min-h-[42px] items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
+              className="btn-cool-primary inline-flex min-h-[42px] items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
             >
               <Sparkles className="h-3.5 w-3.5" />
               Full Case Study
@@ -152,10 +151,10 @@ function FeaturedProjectCard({
                 href={project.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl border border-white/[0.1] px-3.5 py-2 text-xs font-medium text-slate-300 transition hover:border-indigo-400/45 hover:text-white"
+                className="btn-cool-secondary inline-flex min-h-[42px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold"
               >
                 Live Site
-                <ExternalLink className="h-3.5 w-3.5" />
+                <ExternalLink className="h-3.5 w-3.5 text-sky-400" />
               </a>
             )}
           </div>
@@ -195,10 +194,8 @@ export function ProjectsShowcase() {
               role="tab"
               aria-selected={active}
               onClick={() => setFilter(cat)}
-              className={`relative min-h-[42px] rounded-xl px-4 py-2 text-xs font-semibold transition sm:text-sm ${
-                active
-                  ? "btn-cool-primary preserve-dark"
-                  : "btn-cool-secondary"
+              className={`relative min-h-[42px] rounded-xl px-4 py-2 text-xs font-semibold sm:text-sm ${
+                active ? "btn-cool-primary" : "btn-cool-secondary"
               }`}
             >
               {cat}
@@ -208,7 +205,6 @@ export function ProjectsShowcase() {
       </div>
 
       <div className="space-y-8">
-        {/* Flagship Featured Systems (Odd last card automatically spans full 2 columns so there is zero empty space) */}
         {featuredList.length > 0 && (
           <div className="grid gap-6 lg:grid-cols-2">
             {featuredList.map((project, idx) => (
@@ -222,12 +218,11 @@ export function ProjectsShowcase() {
           </div>
         )}
 
-        {/* Notable Earlier Production Products */}
         {earlierList.length > 0 && (
           <div>
             {filter === "All" && (
-              <div className="mb-4 flex items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-slate-400">
-                <Layers className="h-4 w-4 text-indigo-400" />
+              <div className="mb-4 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                <Layers className="h-4 w-4 text-sky-400" />
                 Production Products Shipped at I3 Infosoft (2021 – 2024)
               </div>
             )}
@@ -239,6 +234,7 @@ export function ProjectsShowcase() {
                   <TiltSpotlightCard
                     key={project.slug}
                     accent="emerald"
+                    maxTilt={6.5}
                     className={`flex flex-col rounded-2xl p-5 ${
                       spanLastOdd ? "sm:col-span-2 xl:col-span-4" : ""
                     }`}
@@ -246,29 +242,29 @@ export function ProjectsShowcase() {
                     <div className="mb-4">
                       <ProjectDiagram type={project.diagramType} compact />
                     </div>
-                    <div className="mb-1.5 flex items-center justify-between font-mono text-[11px] text-slate-400">
+                    <div className="mb-1.5 flex items-center justify-between font-mono text-xs text-slate-400">
                       <span>{project.company}</span>
                     </div>
                     <h3 className="text-base font-semibold tracking-tight text-white">
                       {project.shortName}
                     </h3>
-                    <p className="mt-2 flex-1 text-xs leading-relaxed text-slate-300">
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-300">
                       {project.summary}
                     </p>
                     <div className="mt-4 flex flex-wrap gap-1.5">
                       {project.tech.slice(0, 4).map((t) => (
                         <span
                           key={t}
-                          className="rounded-md border border-white/[0.07] bg-white/[0.03] px-2 py-0.5 font-mono text-[10px] text-slate-300"
+                          className="chip-neutral rounded-md px-2 py-0.5 font-mono text-[11px]"
                         >
                           {t}
                         </span>
                       ))}
                     </div>
-                    <div className="mt-4 flex items-center justify-between border-t border-white/[0.07] pt-3.5">
+                    <div className="mt-4 flex items-center justify-between border-t border-white/[0.08] pt-3.5">
                       <Link
                         href={`/projects/${project.slug}`}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-indigo-300 transition hover:text-indigo-200"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 transition hover:text-sky-300"
                       >
                         Architecture details
                         <ArrowUpRight className="h-3.5 w-3.5" />
@@ -279,7 +275,7 @@ export function ProjectsShowcase() {
                           target="_blank"
                           rel="noopener noreferrer"
                           aria-label={`Visit ${project.shortName} live site`}
-                          className="inline-flex items-center gap-1 font-mono text-[11px] text-slate-400 transition hover:text-white"
+                          className="inline-flex items-center gap-1 font-mono text-xs text-slate-400 transition hover:text-sky-400"
                         >
                           Live
                           <ExternalLink className="h-3 w-3" />

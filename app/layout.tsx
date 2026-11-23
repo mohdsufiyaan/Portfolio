@@ -10,10 +10,17 @@ import { MotionProvider } from "../components/MotionProvider";
 import { ThemeProvider } from "../components/ThemeProvider";
 import { ScrollParallaxBackdrop } from "../components/ScrollMotion";
 import { Navbar } from "../components/Navbar";
+import {
+  ResumeModalProvider,
+  ResumePreviewButton,
+} from "../components/ResumeModalProvider";
 
 export const viewport: Viewport = {
-  themeColor: "#05080f",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#050811" },
+  ],
+  colorScheme: "dark light",
   width: "device-width",
   initialScale: 1,
 };
@@ -108,159 +115,181 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('portfolio-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);document.documentElement.classList.toggle('dark',t==='dark');document.documentElement.style.colorScheme=t;}}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('portfolio-theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);document.documentElement.classList.toggle('dark',t==='dark');document.documentElement.style.colorScheme=t;}catch(e){}})();`,
           }}
         />
       </head>
-      <body className="bg-[#04070e] text-slate-100 antialiased">
+      <body className="antialiased">
         <a href="#main" className="skip-link">
           Skip to main content
         </a>
 
         <ThemeProvider>
-          <MotionProvider>
-            <ScrollParallaxBackdrop />
-            <Navbar />
-            {children}
+          <ResumeModalProvider>
+            <MotionProvider>
+              <ScrollParallaxBackdrop />
+              <Navbar />
+              {children}
 
-          <footer className="relative border-t border-white/[0.08] bg-[#04070d]">
-            <div className="mx-auto w-full max-w-[1680px] px-4 py-12 sm:px-8 lg:px-14 xl:px-20">
-              <div className="grid gap-10 md:grid-cols-12 md:items-start">
-                <div className="md:col-span-5">
-                  <Link href="/" className="inline-flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-400/35 bg-sky-400/10 font-mono text-sm font-bold text-sky-300">
-                      {profile.initials}
+              <footer className="site-footer relative">
+                <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+                  <div className="grid gap-10 md:grid-cols-12 md:items-start">
+                    <div className="md:col-span-5">
+                      <Link href="/" className="inline-flex items-center gap-3">
+                        <span className="btn-cool-primary flex h-10 w-10 items-center justify-center rounded-xl font-mono text-sm font-extrabold">
+                          {profile.initials}
+                        </span>
+                        <div>
+                          <div className="text-base font-semibold text-white">
+                            {profile.name}
+                          </div>
+                          <div className="font-mono text-xs text-slate-400">
+                            {profile.role} · {profile.location}
+                          </div>
+                        </div>
+                      </Link>
+                      <p className="mt-4 max-w-md text-sm leading-relaxed text-slate-400">
+                        Building resilient full-stack applications, distributed
+                        real-time backends, and grounded enterprise AI agents.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
+                      <div>
+                        <div className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-400">
+                          Navigation
+                        </div>
+                        <ul className="mt-3 space-y-2.5 text-sm text-slate-300">
+                          <li>
+                            <Link
+                              href="/#about"
+                              className="transition hover:text-sky-400"
+                            >
+                              About
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/#skills"
+                              className="transition hover:text-sky-400"
+                            >
+                              Technical Skills
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/#experience"
+                              className="transition hover:text-sky-400"
+                            >
+                              Experience
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/#projects"
+                              className="transition hover:text-sky-400"
+                            >
+                              Projects
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div>
+                        <div className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-400">
+                          Deep Dives
+                        </div>
+                        <ul className="mt-3 space-y-2.5 text-sm text-slate-300">
+                          <li>
+                            <Link
+                              href="/#architecture"
+                              className="transition hover:text-sky-400"
+                            >
+                              Architecture
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              href="/#achievements"
+                              className="transition hover:text-sky-400"
+                            >
+                              Awards &amp; Impact
+                            </Link>
+                          </li>
+                          <li>
+                            <ResumePreviewButton
+                              variant="link"
+                              label="Review Resume PDF"
+                              icon="eye"
+                            />
+                          </li>
+                          <li>
+                            <a
+                              href={profile.resumePath}
+                              download="Mohd_Sufiyan_Resume.pdf"
+                              className="inline-flex items-center gap-1.5 text-slate-300 transition hover:text-sky-400"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                              Download PDF
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="col-span-2 sm:col-span-1">
+                        <div className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-400">
+                          Verified Profiles
+                        </div>
+                        <ul className="mt-3 space-y-2.5 text-sm text-slate-300">
+                          <li>
+                            <a
+                              href={profile.linkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 transition hover:text-sky-400"
+                            >
+                              <LinkedInIcon className="h-4 w-4 text-slate-400" />
+                              LinkedIn
+                              <ArrowUpRight className="h-3.5 w-3.5" />
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href={profile.github}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 transition hover:text-sky-400"
+                            >
+                              <GitHubIcon className="h-4 w-4 text-slate-400" />
+                              GitHub
+                              <ArrowUpRight className="h-3.5 w-3.5" />
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href={`mailto:${profile.email}`}
+                              className="inline-flex items-center gap-2 transition hover:text-sky-400"
+                            >
+                              <Mail className="h-4 w-4 text-slate-400" />
+                              Email Direct
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-white/[0.08] pt-6 font-mono text-xs text-slate-500 sm:flex-row sm:items-center">
+                    <span>
+                      © {new Date().getFullYear()} {profile.name}. Engineered
+                      with Next.js, TypeScript &amp; Three.js.
                     </span>
-                    <div>
-                      <div className="text-base font-semibold text-white">
-                        {profile.name}
-                      </div>
-                      <div className="font-mono text-xs text-slate-400">
-                        {profile.role} · {profile.location}
-                      </div>
-                    </div>
-                  </Link>
-                  <p className="mt-4 max-w-md text-sm leading-relaxed text-slate-400">
-                    Building resilient full-stack applications, distributed
-                    real-time backends, and grounded enterprise AI agents.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
-                  <div>
-                    <div className="font-mono text-xs uppercase tracking-wider text-slate-400">
-                      Navigation
-                    </div>
-                    <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                      <li>
-                        <Link href="/#about" className="transition hover:text-sky-300">
-                          About
-                        </Link>
-                      </li>
-                      <li>
-                        <Link href="/#skills" className="transition hover:text-sky-300">
-                          Technical Skills
-                        </Link>
-                      </li>
-                      <li>
-                        <Link href="/#experience" className="transition hover:text-sky-300">
-                          Experience
-                        </Link>
-                      </li>
-                      <li>
-                        <Link href="/#projects" className="transition hover:text-sky-300">
-                          Projects
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <div className="font-mono text-xs uppercase tracking-wider text-slate-400">
-                      Deep Dives
-                    </div>
-                    <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                      <li>
-                        <Link href="/#architecture" className="transition hover:text-sky-300">
-                          Architecture
-                        </Link>
-                      </li>
-                      <li>
-                        <Link href="/#achievements" className="transition hover:text-sky-300">
-                          Awards &amp; Impact
-                        </Link>
-                      </li>
-                      <li>
-                        <Link href="/#contact" className="transition hover:text-sky-300">
-                          Direct Contact
-                        </Link>
-                      </li>
-                      <li>
-                        <a
-                          href={profile.resumePath}
-                          download
-                          className="inline-flex items-center gap-1.5 text-sky-300 transition hover:text-sky-200"
-                        >
-                          <Download className="h-3.5 w-3.5" />
-                          Resume PDF
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="col-span-2 sm:col-span-1">
-                    <div className="font-mono text-xs uppercase tracking-wider text-slate-400">
-                      Verified Profiles
-                    </div>
-                    <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                      <li>
-                        <a
-                          href={profile.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 transition hover:text-sky-300"
-                        >
-                          <LinkedInIcon className="h-4 w-4 text-slate-400" />
-                          LinkedIn
-                          <ArrowUpRight className="h-3.5 w-3.5" />
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href={profile.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 transition hover:text-sky-300"
-                        >
-                          <GitHubIcon className="h-4 w-4 text-slate-400" />
-                          GitHub
-                          <ArrowUpRight className="h-3.5 w-3.5" />
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          href={`mailto:${profile.email}`}
-                          className="inline-flex items-center gap-2 transition hover:text-sky-300"
-                        >
-                          <Mail className="h-4 w-4 text-slate-400" />
-                          Email Direct
-                        </a>
-                      </li>
-                    </ul>
+                    <span>&ldquo;{profile.quote}&rdquo;</span>
                   </div>
                 </div>
-              </div>
-
-              <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-white/[0.07] pt-6 font-mono text-xs text-slate-500 sm:flex-row sm:items-center">
-                <span>
-                  © {new Date().getFullYear()} {profile.name}. Engineered with
-                  Next.js, TypeScript &amp; Three.js.
-                </span>
-                <span>&ldquo;{profile.quote}&rdquo;</span>
-              </div>
-            </div>
-          </footer>
-          </MotionProvider>
+              </footer>
+            </MotionProvider>
+          </ResumeModalProvider>
         </ThemeProvider>
       </body>
     </html>

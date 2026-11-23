@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useRef, useState, type MouseEvent, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { ThreeBowCard, type BowAccent } from "./ThreeBowCard";
 
 interface RevealProps {
   children: ReactNode;
@@ -48,51 +49,19 @@ export function Reveal({
 interface SpotlightCardProps {
   children: ReactNode;
   className?: string;
-  accent?: "cyan" | "amber" | "emerald" | "violet";
+  accent?: BowAccent;
+  maxTilt?: number;
 }
-
-const accentSpotlights = {
-  cyan: "rgba(56, 189, 248, 0.16)",
-  amber: "rgba(251, 146, 60, 0.14)",
-  emerald: "rgba(16, 185, 129, 0.14)",
-  violet: "rgba(139, 92, 246, 0.15)",
-};
 
 export function SpotlightCard({
   children,
   className = "",
   accent = "cyan",
+  maxTilt = 6.5,
 }: SpotlightCardProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ x: 0, y: 0, active: false });
-
-  const handleMove = (e: MouseEvent<HTMLDivElement>) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    setPos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-      active: true,
-    });
-  };
-
   return (
-    <div
-      ref={ref}
-      onMouseMove={handleMove}
-      onMouseLeave={() => setPos((p) => ({ ...p, active: false }))}
-      className={`glass-card overflow-hidden ${className}`}
-    >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -inset-px rounded-[inherit] transition-opacity duration-300"
-        style={{
-          opacity: pos.active ? 1 : 0,
-          background: `radial-gradient(420px circle at ${pos.x}px ${pos.y}px, ${accentSpotlights[accent]}, transparent 65%)`,
-        }}
-      />
-      <div className="relative z-10 h-full">{children}</div>
-    </div>
+    <ThreeBowCard accent={accent} maxTilt={maxTilt} className={className}>
+      {children}
+    </ThreeBowCard>
   );
 }

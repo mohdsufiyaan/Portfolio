@@ -26,10 +26,10 @@ export function ThemeToggle() {
         {isDark ? (
           <Sun className="h-3.5 w-3.5 text-amber-400" />
         ) : (
-          <Moon className="h-3.5 w-3.5 text-blue-600" />
+          <Moon className="h-3.5 w-3.5 text-sky-600" />
         )}
       </motion.span>
-      <span className="hidden xl:inline">{isDark ? "Light" : "Dark"}</span>
+      <span className="hidden sm:inline">{isDark ? "Light" : "Dark"}</span>
     </button>
   );
 }

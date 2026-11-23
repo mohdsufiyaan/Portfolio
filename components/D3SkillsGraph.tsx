@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { RotateCcw, Sparkles } from "lucide-react";
 import { skillGroups, type SkillGroup } from "../app/data";
+import { useTheme } from "./ThemeProvider";
 
 interface ForceNode extends d3.SimulationNodeDatum {
   id: string;
@@ -27,11 +28,18 @@ interface ForceLink extends d3.SimulationLinkDatum<ForceNode> {
   isCoreLink: boolean;
 }
 
-const DOMAIN_COLORS: Record<SkillGroup["accent"], string> = {
+const DOMAIN_COLORS_DARK: Record<SkillGroup["accent"], string> = {
   cyan: "#38bdf8",
   amber: "#fb923c",
   emerald: "#34d399",
   violet: "#a78bfa",
+};
+
+const DOMAIN_COLORS_LIGHT: Record<SkillGroup["accent"], string> = {
+  cyan: "#0284c7",
+  amber: "#d97706",
+  emerald: "#059669",
+  violet: "#7c3aed",
 };
 
 const SHORT_DOMAIN_LABELS: Record<string, string> = {
@@ -80,6 +88,9 @@ export function D3SkillsGraph({
   activeDomain: string;
   onSelectDomain: (id: string) => void;
 }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const svgRef = useRef<SVGSVGElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState<{
@@ -102,9 +113,9 @@ export function D3SkillsGraph({
     const svgEl = svgRef.current;
     if (!svgEl) return;
 
-    // Responsive coordinate canvas (no horizontal scroll needed, clean aspect ratio)
+    const palette = isDark ? DOMAIN_COLORS_DARK : DOMAIN_COLORS_LIGHT;
     const width = isCompact ? 620 : 1140;
-    const height = isCompact ? 620 : 620;
+    const height = 620;
     const cx = width / 2;
     const cy = height / 2;
 
@@ -122,7 +133,7 @@ export function D3SkillsGraph({
         context: "Senior Software Engineer · 5.5+ Years Full-Stack & AI",
         tier: "core",
         radius: isCompact ? 34 : 38,
-        color: "#38bdf8",
+        color: isDark ? "#38bdf8" : "#0284c7",
         anchorX: cx,
         anchorY: cy,
         fx: cx,
@@ -137,9 +148,9 @@ export function D3SkillsGraph({
     const links: ForceLink[] = [];
 
     skillGroups.forEach((group, gIdx) => {
-      const color = DOMAIN_COLORS[group.accent];
-      // 6 evenly spaced sectors rotated cleanly so top/bottom hubs have generous clearance
-      const baseAngle = -Math.PI / 2 + (gIdx * Math.PI * 2) / skillGroups.length + Math.PI / 6;
+      const color = palette[group.accent];
+      const baseAngle =
+        -Math.PI / 2 + (gIdx * Math.PI * 2) / skillGroups.length + Math.PI / 6;
       const hx = cx + Math.cos(baseAngle) * hubRx;
       const hy = cy + Math.sin(baseAngle) * hubRy;
       const domainId = `domain-${group.id}`;
@@ -219,7 +230,7 @@ export function D3SkillsGraph({
       .attr("y", "-60%")
       .attr("width", "220%")
       .attr("height", "220%");
-    glow.append("feGaussianBlur").attr("stdDeviation", "4.5").attr("result", "b");
+    glow.append("feGaussianBlur").attr("stdDeviation", isDark ? "4.5" : "2.5").attr("result", "b");
     const merge = glow.append("feMerge");
     merge.append("feMergeNode").attr("in", "b");
     merge.append("feMergeNode").attr("in", "SourceGraphic");
@@ -229,15 +240,14 @@ export function D3SkillsGraph({
       .attr("id", "force-core-grad")
       .attr("cx", "34%")
       .attr("cy", "34%");
-    coreGrad.append("stop").attr("offset", "0%").attr("stop-color", "#e0f2fe");
-    coreGrad.append("stop").attr("offset", "55%").attr("stop-color", "#38bdf8");
+    coreGrad.append("stop").attr("offset", "0%").attr("stop-color", isDark ? "#e0f2fe" : "#38bdf8");
+    coreGrad.append("stop").attr("offset", "55%").attr("stop-color", isDark ? "#38bdf8" : "#0284c7");
     coreGrad.append("stop").attr("offset", "100%").attr("stop-color", "#0369a1");
 
-    // Concentric dashed orbital ellipses matching the cyber aesthetic
     const guideLayer = svg.append("g").attr("fill", "none");
     [
-      [hubRx, hubRy, 0.22],
-      [skillRx * 0.96, skillRy * 0.96, 0.12],
+      [hubRx, hubRy, isDark ? 0.22 : 0.28],
+      [skillRx * 0.96, skillRy * 0.96, isDark ? 0.12 : 0.16],
     ].forEach(([rx, ry, op]) => {
       guideLayer
         .append("ellipse")
@@ -245,7 +255,7 @@ export function D3SkillsGraph({
         .attr("cy", cy)
         .attr("rx", rx)
         .attr("ry", ry)
-        .attr("stroke", "#38bdf8")
+        .attr("stroke", isDark ? "#38bdf8" : "#0284c7")
         .attr("stroke-dasharray", "3 7")
         .attr("stroke-opacity", op);
     });
@@ -259,13 +269,12 @@ export function D3SkillsGraph({
       .data(links)
       .join("line")
       .attr("stroke", (d) => d.color)
-      .attr("stroke-width", (d) => (d.isCoreLink ? 2 : 1.25))
+      .attr("stroke-width", (d) => (d.isCoreLink ? 2 : 1.3))
       .attr("stroke-opacity", (d) => {
-        if (activeDomain === "all") return d.isCoreLink ? 0.55 : 0.34;
-        return d.group === activeDomain ? 0.85 : 0.08;
+        if (activeDomain === "all") return d.isCoreLink ? (isDark ? 0.55 : 0.5) : (isDark ? 0.34 : 0.36);
+        return d.group === activeDomain ? 0.85 : 0.09;
       });
 
-    // Animated traveling energy pulse dots on the 6 Core -> Domain links
     const coreLinks = links.filter((l) => l.isCoreLink);
     const pulseDots = pulseLayer
       .selectAll<SVGCircleElement, ForceLink>("circle")
@@ -275,7 +284,7 @@ export function D3SkillsGraph({
       .attr("fill", (d) => d.color)
       .attr("filter", "url(#force-glow)")
       .attr("opacity", (d) =>
-        activeDomain === "all" || d.group === activeDomain ? 0.95 : 0.1,
+        activeDomain === "all" || d.group === activeDomain ? 0.95 : 0.12,
       );
 
     const nodeSel = nodeLayer
@@ -285,19 +294,17 @@ export function D3SkillsGraph({
       .style("cursor", (d) => (d.tier === "core" ? "pointer" : "grab"))
       .attr("opacity", (d) => {
         if (activeDomain === "all" || d.tier === "core") return 1;
-        return d.group === activeDomain ? 1 : 0.18;
+        return d.group === activeDomain ? 1 : 0.22;
       });
 
-    // Outer halo for core node
     nodeSel
       .filter((d) => d.tier === "core")
       .append("circle")
       .attr("r", (d) => d.radius + 11)
-      .attr("fill", "rgba(56,189,248,0.12)")
-      .attr("stroke", "rgba(56,189,248,0.38)")
+      .attr("fill", isDark ? "rgba(56,189,248,0.12)" : "rgba(2,132,199,0.12)")
+      .attr("stroke", isDark ? "rgba(56,189,248,0.38)" : "rgba(2,132,199,0.42)")
       .attr("stroke-width", 1.2);
 
-    // Main circle
     nodeSel
       .append("circle")
       .attr("class", "main-dot")
@@ -306,7 +313,7 @@ export function D3SkillsGraph({
         d.tier === "core"
           ? "url(#force-core-grad)"
           : d.tier === "domain"
-            ? "#081226"
+            ? isDark ? "#081226" : "#ffffff"
             : d.color,
       )
       .attr("stroke", (d) => d.color)
@@ -315,20 +322,18 @@ export function D3SkillsGraph({
       )
       .attr("filter", (d) => (d.tier !== "skill" ? "url(#force-glow)" : null));
 
-    // Core label inside sphere
     nodeSel
       .filter((d) => d.tier === "core")
       .append("text")
       .text("Mohd Sufiyan")
       .attr("text-anchor", "middle")
       .attr("dy", "0.35em")
-      .attr("fill", "#03111c")
+      .attr("fill", isDark ? "#03111c" : "#ffffff")
       .attr("font-size", isCompact ? "9.5px" : "10.5px")
       .attr("font-weight", "800")
       .attr("font-family", "var(--font-mono), monospace")
       .style("pointer-events", "none");
 
-    // Domain Hub badge pill + count inside circle
     const domainSel = nodeSel.filter((d) => d.tier === "domain");
     domainSel
       .append("text")
@@ -343,51 +348,49 @@ export function D3SkillsGraph({
 
     domainSel
       .append("rect")
-      .attr("x", (d) => -(d.label.length * 3.6 + 12))
+      .attr("x", (d) => -(d.label.length * 3.8 + 12))
       .attr("y", (d) => d.radius + 5)
-      .attr("width", (d) => d.label.length * 7.2 + 24)
-      .attr("height", 20)
-      .attr("rx", 10)
-      .attr("fill", "rgba(5, 10, 22, 0.92)")
+      .attr("width", (d) => d.label.length * 7.6 + 24)
+      .attr("height", 22)
+      .attr("rx", 11)
+      .attr("fill", isDark ? "rgba(5, 10, 22, 0.94)" : "rgba(255, 255, 255, 0.96)")
       .attr("stroke", (d) => d.color)
-      .attr("stroke-opacity", 0.5);
+      .attr("stroke-opacity", isDark ? 0.55 : 0.65);
 
     domainSel
       .append("text")
       .text((d) => d.label)
       .attr("text-anchor", "middle")
-      .attr("y", (d) => d.radius + 18.5)
-      .attr("fill", "#f8fafc")
-      .attr("font-size", "10.5px")
+      .attr("y", (d) => d.radius + 19.5)
+      .attr("fill", isDark ? "#f8fafc" : "#0f172a")
+      .attr("font-size", "11px")
       .attr("font-weight", "700")
       .attr("font-family", "var(--font-mono), monospace")
       .style("pointer-events", "none");
 
-    // Skill pill badges (crisp non-overlapping background + legible label)
     const skillSel = nodeSel.filter((d) => d.tier === "skill");
     skillSel
       .append("rect")
-      .attr("x", (d) => -(d.label.length * 3.3 + 9))
+      .attr("x", (d) => -(d.label.length * 3.5 + 10))
       .attr("y", (d) => d.radius + 5)
-      .attr("width", (d) => d.label.length * 6.6 + 18)
-      .attr("height", 18)
-      .attr("rx", 9)
-      .attr("fill", "rgba(6, 12, 24, 0.88)")
-      .attr("stroke", "rgba(148, 163, 184, 0.24)")
-      .attr("stroke-width", 0.9);
+      .attr("width", (d) => d.label.length * 7.0 + 20)
+      .attr("height", 20)
+      .attr("rx", 10)
+      .attr("fill", isDark ? "rgba(6, 12, 24, 0.9)" : "rgba(255, 255, 255, 0.95)")
+      .attr("stroke", isDark ? "rgba(148, 163, 184, 0.28)" : "rgba(15, 23, 42, 0.16)")
+      .attr("stroke-width", 1);
 
     skillSel
       .append("text")
       .text((d) => d.label)
       .attr("text-anchor", "middle")
-      .attr("y", (d) => d.radius + 17)
-      .attr("fill", "#e2e8f0")
-      .attr("font-size", isCompact ? "9px" : "10px")
-      .attr("font-weight", "500")
+      .attr("y", (d) => d.radius + 18)
+      .attr("fill", isDark ? "#e2e8f0" : "#1e293b")
+      .attr("font-size", isCompact ? "9.5px" : "10.5px")
+      .attr("font-weight", "600")
       .attr("font-family", "var(--font-mono), monospace")
       .style("pointer-events", "none");
 
-    // Sector-anchored D3 Force Simulation: smooth animated spring physics with ZERO collisions
     const simulation = d3
       .forceSimulation<ForceNode>(nodes)
       .force(
@@ -395,11 +398,23 @@ export function D3SkillsGraph({
         d3
           .forceLink<ForceNode, ForceLink>(links)
           .id((d) => d.id)
-          .distance((d) => (d.isCoreLink ? (isCompact ? 132 : 205) : isCompact ? 105 : 170))
+          .distance((d) =>
+            d.isCoreLink ? (isCompact ? 132 : 205) : isCompact ? 105 : 170,
+          )
           .strength(0.28),
       )
-      .force("x", d3.forceX<ForceNode>((d) => d.anchorX).strength((d) => (d.tier === "domain" ? 0.36 : 0.44)))
-      .force("y", d3.forceY<ForceNode>((d) => d.anchorY).strength((d) => (d.tier === "domain" ? 0.36 : 0.44)))
+      .force(
+        "x",
+        d3
+          .forceX<ForceNode>((d) => d.anchorX)
+          .strength((d) => (d.tier === "domain" ? 0.36 : 0.44)),
+      )
+      .force(
+        "y",
+        d3
+          .forceY<ForceNode>((d) => d.anchorY)
+          .strength((d) => (d.tier === "domain" ? 0.36 : 0.44)),
+      )
       .force(
         "collide",
         d3.forceCollide<ForceNode>().radius((d) =>
@@ -409,7 +424,6 @@ export function D3SkillsGraph({
       .velocityDecay(0.32)
       .alphaDecay(0.025);
 
-    // Interactive drag physics
     const drag = d3
       .drag<SVGGElement, ForceNode>()
       .on("start", (event, d) => {
@@ -435,7 +449,10 @@ export function D3SkillsGraph({
     nodeSel
       .on("mouseenter", function (_event, d) {
         if (d.tier === "skill") {
-          d3.select(this).select("circle.main-dot").attr("r", d.radius + 3).attr("stroke", "#ffffff");
+          d3.select(this)
+            .select("circle.main-dot")
+            .attr("r", d.radius + 3)
+            .attr("stroke", isDark ? "#ffffff" : "#0f172a");
         }
         const dom = skillGroups.find((g) => g.id === d.group);
         setHovered({
@@ -447,7 +464,10 @@ export function D3SkillsGraph({
       })
       .on("mouseleave", function (_event, d) {
         if (d.tier === "skill") {
-          d3.select(this).select("circle.main-dot").attr("r", d.radius).attr("stroke", d.color);
+          d3.select(this)
+            .select("circle.main-dot")
+            .attr("r", d.radius)
+            .attr("stroke", d.color);
         }
         setHovered(null);
       })
@@ -483,7 +503,6 @@ export function D3SkillsGraph({
         return `translate(${bx + dx},${by + dy})`;
       });
 
-      // Animate traveling energy pulses smoothly from Core -> Domain Hubs
       pulseDots
         .attr("cx", (d, i) => {
           const s = d.source as ForceNode;
@@ -501,7 +520,6 @@ export function D3SkillsGraph({
 
     simulation.on("tick", renderPositions);
 
-    // Subtle continuous living node animation (pauses offscreen or when tab hidden)
     let rafId = 0;
     let visible = true;
     let last = performance.now();
@@ -531,12 +549,12 @@ export function D3SkillsGraph({
       io.disconnect();
       simulation.stop();
     };
-  }, [activeDomain, onSelectDomain, simTick, isCompact]);
+  }, [activeDomain, onSelectDomain, simTick, isCompact, isDark]);
 
   return (
     <div
       ref={hostRef}
-      className="preserve-dark relative mb-8 overflow-hidden rounded-3xl border border-white/[0.12] bg-[#060c18] shadow-[0_24px_70px_-28px_rgba(56,189,248,0.28)]"
+      className="glass-panel relative mb-8 overflow-hidden rounded-3xl"
     >
       <div
         aria-hidden="true"
@@ -544,14 +562,14 @@ export function D3SkillsGraph({
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-500/12 blur-[90px]"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-500/10 blur-[90px]"
       />
 
       {/* Toolbar */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] bg-slate-950/65 px-5 py-3.5">
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-3.5">
         <div className="flex items-center gap-2 font-mono text-xs text-slate-200">
           <Sparkles className="h-3.5 w-3.5 text-sky-400" />
-          <span>D3.JS FORCE-DIRECTED SKILL NETWORK</span>
+          <span className="font-semibold">D3.JS FORCE-DIRECTED SKILL NETWORK</span>
           <span className="hidden text-slate-400 md:inline">
             · Drag nodes with spring physics or click clusters to filter
           </span>
@@ -560,14 +578,14 @@ export function D3SkillsGraph({
         <button
           type="button"
           onClick={() => setSimTick((t) => t + 1)}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.12] bg-slate-900/80 px-3 py-1.5 font-mono text-[11px] text-sky-300 transition hover:border-sky-400/50 hover:text-white"
+          className="btn-cool-ghost inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs font-medium"
         >
-          <RotateCcw className="h-3 w-3 text-sky-400" />
+          <RotateCcw className="h-3.5 w-3.5 text-sky-400" />
           Re-Simulate Physics
         </button>
       </div>
 
-      {/* Fully Responsive Animated D3 SVG (Zero Horizontal Scroll, Zero Overlaps) */}
+      {/* Responsive Animated D3 SVG */}
       <div className="relative w-full px-2 py-2 sm:px-4">
         <svg
           ref={svgRef}
@@ -578,14 +596,14 @@ export function D3SkillsGraph({
       </div>
 
       {/* Live Telemetry Footer Bar */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.08] bg-slate-950/80 px-5 py-3">
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.08] px-5 py-3">
         {hovered ? (
           <div className="flex items-center gap-3">
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-full"
               style={{
                 backgroundColor: hovered.color,
-                boxShadow: `0 0 12px ${hovered.color}`,
+                boxShadow: `0 0 10px ${hovered.color}`,
               }}
             />
             <span className="font-mono text-xs font-semibold text-white">
@@ -596,11 +614,10 @@ export function D3SkillsGraph({
           </div>
         ) : (
           <span className="font-mono text-xs text-slate-400">
-            Drag any glowing node or click a domain cluster to filter skills
-            below
+            Drag any node or click a domain cluster to filter skills below
           </span>
         )}
-        <span className="font-mono text-[11px] text-sky-300">
+        <span className="font-mono text-xs text-sky-400">
           D3 Force Physics · Live Orbit
         </span>
       </div>

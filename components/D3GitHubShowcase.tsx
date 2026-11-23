@@ -13,14 +13,22 @@ import {
 import type { GitHubPortfolioData } from "../lib/github";
 import { GitHubIcon } from "./SocialIcons";
 import { TiltSpotlightCard } from "./ScrollMotion";
+import { useTheme } from "./ThemeProvider";
 
-// Authentic GitHub-inspired luminous emerald/cyan scale matching GitHub contribution levels 0–4
-const LEVEL_COLORS = [
+const LEVEL_COLORS_DARK = [
   "#111827",
   "#0e4429",
   "#006d32",
   "#26a641",
   "#39d353",
+];
+
+const LEVEL_COLORS_LIGHT = [
+  "#e2e8f0",
+  "#9be9a8",
+  "#40c463",
+  "#30a14e",
+  "#216e39",
 ];
 
 const PRIVATE_SYSTEMS = [
@@ -69,6 +77,10 @@ const PRIVATE_SYSTEMS = [
 ];
 
 export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const levelColors = isDark ? LEVEL_COLORS_DARK : LEVEL_COLORS_LIGHT;
+
   const heatmapRef = useRef<SVGSVGElement>(null);
   const donutRef = useRef<SVGSVGElement>(null);
 
@@ -80,7 +92,6 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
     color: string;
   } | null>(null);
 
-  // 1. Exact 52–53 Week GitHub Profile Contribution Squares Grid rendered with D3.js
   useEffect(() => {
     const svgEl = heatmapRef.current;
     if (!svgEl || data.squares.length === 0) return;
@@ -94,11 +105,15 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
     const width = padX + weeks * (cell + gap) + 8;
     const height = padY + 7 * (cell + gap) + 8;
 
+    const labelFill = isDark ? "#94a3b8" : "#475569";
+    const emptyStroke = isDark ? "rgba(255,255,255,0.06)" : "rgba(15,23,42,0.08)";
+    const activeStroke = isDark ? "rgba(57,211,83,0.28)" : "rgba(22,163,74,0.28)";
+    const hoverStroke = isDark ? "#ffffff" : "#0f172a";
+
     const svg = d3.select(svgEl);
     svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
 
-    // Day-of-week labels (Mon / Wed / Fri matching GitHub profile)
     const dayLabels = ["", "Mon", "", "Wed", "", "Fri", ""];
     svg
       .append("g")
@@ -107,12 +122,11 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
       .join("text")
       .attr("x", 0)
       .attr("y", (_d, i) => padY + i * (cell + gap) + cell - 2)
-      .attr("fill", "#8b949e")
+      .attr("fill", labelFill)
       .attr("font-size", "9.5px")
       .attr("font-family", "var(--font-mono), monospace")
       .text((d) => d);
 
-    // Month labels across top columns (avoid overlapping first/last partial week)
     const seenMonths = new Set<string>();
     const monthTicks: { label: string; weekIndex: number }[] = [];
     data.squares.forEach((sq) => {
@@ -137,12 +151,11 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
       .join("text")
       .attr("x", (d) => padX + d.weekIndex * (cell + gap))
       .attr("y", 12)
-      .attr("fill", "#8b949e")
+      .attr("fill", labelFill)
       .attr("font-size", "10px")
       .attr("font-family", "var(--font-mono), monospace")
       .text((d) => d.label);
 
-    // Exact GitHub contribution squares
     const squaresSel = svg
       .append("g")
       .selectAll("rect")
@@ -154,31 +167,25 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
       .attr("height", cell)
       .attr("rx", 2.5)
       .attr("ry", 2.5)
-      .attr("fill", (d) => LEVEL_COLORS[d.level])
-      .attr("stroke", (d) =>
-        d.level > 0 ? "rgba(57,211,83,0.28)" : "rgba(255,255,255,0.06)",
-      )
+      .attr("fill", (d) => levelColors[d.level])
+      .attr("stroke", (d) => (d.level > 0 ? activeStroke : emptyStroke))
       .attr("stroke-width", 1)
       .style("cursor", "pointer")
       .style("transition", "stroke 140ms ease, stroke-width 140ms ease");
 
     squaresSel
       .on("mouseenter", function (_event, d) {
-        d3.select(this).attr("stroke", "#ffffff").attr("stroke-width", 1.7);
+        d3.select(this).attr("stroke", hoverStroke).attr("stroke-width", 1.7);
         setHoveredTooltip(d.tooltip);
       })
       .on("mouseleave", function (_event, d) {
         d3.select(this)
-          .attr(
-            "stroke",
-            d.level > 0 ? "rgba(57,211,83,0.28)" : "rgba(255,255,255,0.06)",
-          )
+          .attr("stroke", d.level > 0 ? activeStroke : emptyStroke)
           .attr("stroke-width", 1);
         setHoveredTooltip(null);
       });
-  }, [data.squares]);
+  }, [data.squares, isDark, levelColors]);
 
-  // 2. D3.js Engineering Stack Focus Arc Chart
   useEffect(() => {
     const svgEl = donutRef.current;
     if (!svgEl || data.stackAllocation.length === 0) return;
@@ -219,7 +226,7 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
       .data(pie(data.stackAllocation))
       .join("path")
       .attr("fill", (d) => d.data.color)
-      .attr("stroke", "#060c18")
+      .attr("stroke", isDark ? "#0b1222" : "#ffffff")
       .attr("stroke-width", 2)
       .style("cursor", "pointer")
       .style("transition", "filter 180ms ease")
@@ -229,7 +236,7 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
       .on("mouseenter", function (_event, d) {
         d3.select(this)
           .attr("d", arcHover(d) ?? "")
-          .style("filter", "brightness(1.15)");
+          .style("filter", "brightness(1.1)");
         setHoveredStack(d.data);
       })
       .on("mouseleave", function (_event, d) {
@@ -238,18 +245,17 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
           .style("filter", "none");
         setHoveredStack(null);
       });
-  }, [data.stackAllocation]);
+  }, [data.stackAllocation, isDark]);
 
   const activeSlice = hoveredStack ?? data.stackAllocation[0];
 
   return (
     <div className="space-y-8">
-      {/* Top Row: Exact GitHub Contribution Squares + Engineering Focus Donut */}
       <div className="grid gap-6 lg:grid-cols-12">
-        <div className="preserve-dark relative overflow-hidden rounded-3xl border border-white/[0.12] bg-[#060c18] p-5 shadow-[0_24px_60px_-28px_rgba(56,189,248,0.22)] sm:p-7 lg:col-span-8">
+        <div className="glass-panel relative overflow-hidden rounded-3xl p-5 sm:p-7 lg:col-span-8">
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/[0.08] pb-5">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 font-mono text-[11px] text-emerald-300">
+              <div className="chip-emerald inline-flex items-center gap-2 rounded-full px-3 py-1 font-mono text-xs font-medium">
                 <Lock className="h-3.5 w-3.5" />
                 <span>
                   {data.source === "graphql"
@@ -261,7 +267,7 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
                 <GitHubIcon className="h-5 w-5 text-emerald-400" />
                 {data.summaryText}
               </h3>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-sm text-slate-400">
                 Exact 52-week contribution calendar synced directly from GitHub
                 (private enterprise repositories remain confidential).
               </p>
@@ -271,29 +277,29 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
               href={data.profileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 font-mono text-xs font-medium text-emerald-300 transition hover:bg-emerald-400 hover:text-slate-950"
+              className="btn-cool-secondary inline-flex min-h-[42px] items-center gap-1.5 rounded-xl px-4 py-2 font-mono text-xs font-semibold"
             >
-              <GitHubIcon className="h-4 w-4" />
+              <GitHubIcon className="h-4 w-4 text-emerald-400" />
               @{data.username}
               <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
           </div>
 
-          {/* Responsive 52-Week Exact GitHub Square Matrix */}
           <div className="mt-5 w-full overflow-x-auto pb-2">
             <svg
               ref={heatmapRef}
-              className="block h-auto min-w-[620px] w-full"
+              className="block h-auto min-w-[600px] w-full"
               role="img"
               aria-label={`D3.js 52-week GitHub contribution square calendar showing ${data.summaryText}`}
             />
           </div>
 
-          {/* Bottom Legend + Hover Tooltip (Never exposes any repository name) */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.08] pt-4 font-mono text-[11px]">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.08] pt-4 font-mono text-xs">
             <div className="text-slate-200">
               {hoveredTooltip ? (
-                <span className="text-emerald-300">{hoveredTooltip}</span>
+                <span className="font-semibold text-emerald-400">
+                  {hoveredTooltip}
+                </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-slate-400">
                   <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
@@ -304,7 +310,7 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
 
             <div className="flex items-center gap-1.5 text-slate-400">
               <span>Less</span>
-              {LEVEL_COLORS.map((col, idx) => (
+              {levelColors.map((col, idx) => (
                 <span
                   key={col}
                   title={`Contribution level ${idx}`}
@@ -317,10 +323,14 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
           </div>
         </div>
 
-        {/* D3 Engineering Stack Allocation Arc Chart */}
-        <div className="preserve-dark flex flex-col justify-between rounded-3xl border border-white/[0.12] bg-[#060c18] p-6 shadow-[0_24px_60px_-28px_rgba(56,189,248,0.22)] sm:p-7 lg:col-span-4">
+        {/* D3 Engineering Stack Allocation Arc Chart (Three.js Corner-Bow Card) */}
+        <TiltSpotlightCard
+          accent="cyan"
+          maxTilt={4.5}
+          className="flex flex-col justify-between rounded-3xl p-6 sm:p-7 lg:col-span-4"
+        >
           <div>
-            <div className="font-mono text-[11px] uppercase tracking-wider text-sky-400">
+            <div className="font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
               D3.js Production Footprint
             </div>
             <h3 className="mt-1 text-lg font-semibold text-white">
@@ -360,19 +370,22 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
                   />
                   {item.domain}
                 </span>
-                <span className="font-mono text-slate-400">{item.share}%</span>
+                <span className="font-mono font-semibold text-slate-400">
+                  {item.share}%
+                </span>
               </div>
             ))}
           </div>
-        </div>
+        </TiltSpotlightCard>
       </div>
 
-      {/* Private Production Systems Cards (Confidential naming, zero public repo list) */}
+      {/* Private Production Systems Cards */}
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {PRIVATE_SYSTEMS.map((sys, idx) => (
           <TiltSpotlightCard
             key={sys.slug}
             accent={sys.accent}
+            maxTilt={6}
             className={`flex flex-col justify-between rounded-3xl p-6 ${
               idx === PRIVATE_SYSTEMS.length - 1
                 ? "md:col-span-2 lg:col-span-1"
@@ -381,7 +394,7 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
           >
             <div>
               <div className="flex items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/25 bg-sky-400/10 px-2.5 py-0.5 font-mono text-[10px] text-sky-300">
+                <span className="chip-accent inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[11px] font-medium">
                   <Lock className="h-3 w-3" />
                   {sys.code}
                 </span>
@@ -392,7 +405,7 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
                 {sys.name}
               </h3>
 
-              <p className="mt-2.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
+              <p className="mt-2.5 text-sm leading-relaxed text-slate-300">
                 {sys.summary}
               </p>
 
@@ -400,7 +413,7 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
                 {sys.highlights.map((h) => (
                   <div
                     key={h}
-                    className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-slate-950/55 px-2.5 py-2 font-mono text-[11px] text-slate-200"
+                    className="surface-subcard flex items-center gap-1.5 rounded-xl px-2.5 py-2 font-mono text-xs text-slate-200"
                   >
                     <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
                     <span className="truncate">{h}</span>
@@ -412,7 +425,7 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
             <div className="mt-5 border-t border-white/[0.08] pt-4">
               <Link
                 href={`/projects/${sys.slug}`}
-                className="inline-flex items-center gap-1.5 font-mono text-xs font-medium text-sky-300 transition hover:text-sky-200"
+                className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-sky-400 transition hover:text-sky-300"
               >
                 Inspect Architecture &amp; Case Study
                 <ArrowUpRight className="h-3.5 w-3.5" />

@@ -19,6 +19,7 @@ import {
   Workflow,
   Wrench,
 } from "lucide-react";
+import { useTheme } from "./ThemeProvider";
 
 type ViewLayerId = "overview" | "security" | "data-caching" | "realtime-ops";
 
@@ -1408,6 +1409,9 @@ export function D3ArchitectureBlueprints({
 }: {
   initialSystem?: SystemBlueprint["id"];
 }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [systemId, setSystemId] = useState<SystemBlueprint["id"]>(initialSystem);
   const [viewId, setViewId] = useState<ViewLayerId>("overview");
 
@@ -1466,6 +1470,15 @@ export function D3ArchitectureBlueprints({
     svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
 
+    const lightColorMap: Record<string, string> = {
+      "#38bdf8": "#0284c7",
+      "#22d3ee": "#0891b2",
+      "#34d399": "#059669",
+      "#fb923c": "#d97706",
+      "#a78bfa": "#7c3aed",
+    };
+    const tone = (hex: string) => (isDark ? hex : (lightColorMap[hex] ?? hex));
+
     const defs = svg.append("defs");
     const glow = defs
       .append("filter")
@@ -1474,7 +1487,10 @@ export function D3ArchitectureBlueprints({
       .attr("y", "-40%")
       .attr("width", "180%")
       .attr("height", "180%");
-    glow.append("feGaussianBlur").attr("stdDeviation", "3.5").attr("result", "b");
+    glow
+      .append("feGaussianBlur")
+      .attr("stdDeviation", isDark ? "3.5" : "2.0")
+      .attr("result", "b");
     const merge = glow.append("feMerge");
     merge.append("feMergeNode").attr("in", "b");
     merge.append("feMergeNode").attr("in", "SourceGraphic");
@@ -1487,7 +1503,7 @@ export function D3ArchitectureBlueprints({
       .attr("x", (_d, i) => colX[i] + nodeW / 2)
       .attr("y", 24)
       .attr("text-anchor", "middle")
-      .attr("fill", "#64748b")
+      .attr("fill", isDark ? "#94a3b8" : "#475569")
       .attr("font-size", "10.5px")
       .attr("font-weight", "600")
       .attr("letter-spacing", "0.1em")
@@ -1504,8 +1520,8 @@ export function D3ArchitectureBlueprints({
       .attr("width", nodeW + 24)
       .attr("height", height - 48)
       .attr("rx", 20)
-      .attr("fill", "rgba(15, 23, 42, 0.35)")
-      .attr("stroke", "rgba(148, 163, 184, 0.09)")
+      .attr("fill", isDark ? "rgba(15, 23, 42, 0.35)" : "rgba(241, 245, 249, 0.85)")
+      .attr("stroke", isDark ? "rgba(148, 163, 184, 0.1)" : "rgba(15, 23, 42, 0.1)")
       .attr("stroke-dasharray", "4 6");
 
     const linkGen = d3
@@ -1534,29 +1550,30 @@ export function D3ArchitectureBlueprints({
       const isConnected =
         edge.from === selectedNodeId || edge.to === selectedNodeId;
       const pathId = `bp-edge-${blueprint.id}-${viewId}-${idx}`;
+      const edgeColor = tone(edge.color);
 
       edgesLayer
         .append("path")
         .attr("id", pathId)
         .attr("d", pathD)
         .attr("fill", "none")
-        .attr("stroke", edge.color)
+        .attr("stroke", edgeColor)
         .attr("stroke-width", isConnected ? 2.4 : 1.5)
-        .attr("stroke-opacity", isConnected ? 0.85 : 0.3);
+        .attr("stroke-opacity", isConnected ? 0.85 : 0.34);
 
       edgesLayer
         .append("path")
         .attr("class", "animate-signal-dash")
         .attr("d", pathD)
         .attr("fill", "none")
-        .attr("stroke", edge.color)
+        .attr("stroke", edgeColor)
         .attr("stroke-width", isConnected ? 2.4 : 1.4)
-        .attr("stroke-opacity", isConnected ? 0.95 : 0.45);
+        .attr("stroke-opacity", isConnected ? 0.95 : 0.5);
 
       const pkt = edgesLayer
         .append("circle")
         .attr("r", isConnected ? 4.2 : 3)
-        .attr("fill", edge.color)
+        .attr("fill", edgeColor)
         .attr("filter", "url(#bp-glow)");
 
       pkt
@@ -1581,11 +1598,13 @@ export function D3ArchitectureBlueprints({
       .attr("height", nodeH)
       .attr("rx", 16)
       .attr("fill", (d) =>
-        d.id === selectedNodeId ? "#0f1e38" : "rgba(10, 18, 34, 0.95)",
+        d.id === selectedNodeId
+          ? isDark ? "#0f1e38" : "#f0f9ff"
+          : isDark ? "rgba(10, 18, 34, 0.95)" : "#ffffff",
       )
-      .attr("stroke", (d) => d.color)
-      .attr("stroke-width", (d) => (d.id === selectedNodeId ? 2.4 : 1.2))
-      .attr("stroke-opacity", (d) => (d.id === selectedNodeId ? 1 : 0.45))
+      .attr("stroke", (d) => tone(d.color))
+      .attr("stroke-width", (d) => (d.id === selectedNodeId ? 2.4 : 1.3))
+      .attr("stroke-opacity", (d) => (d.id === selectedNodeId ? 1 : 0.5))
       .attr("filter", (d) => (d.id === selectedNodeId ? "url(#bp-glow)" : null));
 
     nodeGroups
@@ -1593,13 +1612,13 @@ export function D3ArchitectureBlueprints({
       .attr("cx", 18)
       .attr("cy", 21)
       .attr("r", 3.8)
-      .attr("fill", (d) => d.color);
+      .attr("fill", (d) => tone(d.color));
 
     nodeGroups
       .append("text")
       .attr("x", 29)
       .attr("y", 24.5)
-      .attr("fill", (d) => d.color)
+      .attr("fill", (d) => tone(d.color))
       .attr("font-size", "9.5px")
       .attr("font-weight", "700")
       .attr("letter-spacing", "0.08em")
@@ -1610,7 +1629,7 @@ export function D3ArchitectureBlueprints({
       .append("text")
       .attr("x", 16)
       .attr("y", 50)
-      .attr("fill", "#f8fafc")
+      .attr("fill", isDark ? "#f8fafc" : "#0f172a")
       .attr("font-size", "13.5px")
       .attr("font-weight", "700")
       .text((d) => d.title);
@@ -1619,7 +1638,7 @@ export function D3ArchitectureBlueprints({
       .append("text")
       .attr("x", 16)
       .attr("y", 71)
-      .attr("fill", "#94a3b8")
+      .attr("fill", isDark ? "#94a3b8" : "#475569")
       .attr("font-size", "10.5px")
       .attr("font-family", "var(--font-mono), monospace")
       .text((d) => d.subtitle);
@@ -1627,7 +1646,7 @@ export function D3ArchitectureBlueprints({
     nodeGroups
       .on("click", (_event, d) => setSelectedNodeId(d.id))
       .on("mouseenter", (_event, d) => setSelectedNodeId(d.id));
-  }, [blueprint.id, currentView, selectedNodeId, viewId]);
+  }, [blueprint.id, currentView, selectedNodeId, viewId, isDark]);
 
   return (
     <div className="space-y-6">
@@ -1648,10 +1667,8 @@ export function D3ArchitectureBlueprints({
                 role="tab"
                 aria-selected={active}
                 onClick={() => setSystemId(bp.id)}
-                className={`relative inline-flex min-h-[46px] items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-semibold transition sm:px-5 sm:text-sm ${
-                  active
-                    ? "btn-cool-primary preserve-dark"
-                    : "btn-cool-secondary"
+                className={`relative inline-flex min-h-[44px] items-center gap-2 rounded-2xl px-4 py-2 text-xs font-semibold sm:px-5 sm:text-sm ${
+                  active ? "btn-cool-primary" : "btn-cool-secondary"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -1665,7 +1682,7 @@ export function D3ArchitectureBlueprints({
         <div
           role="tablist"
           aria-label="Switch architectural diagram layer"
-          className="flex flex-wrap gap-1.5 rounded-2xl border border-white/[0.1] bg-slate-950/70 p-1.5"
+          className="surface-subcard flex flex-wrap gap-1.5 rounded-2xl p-1.5"
         >
           {VIEW_TABS.map((vt) => {
             const VIcon = vt.icon;
@@ -1677,10 +1694,8 @@ export function D3ArchitectureBlueprints({
                 role="tab"
                 aria-selected={active}
                 onClick={() => setViewId(vt.id)}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 font-mono text-[11px] font-semibold transition ${
-                  active
-                    ? "btn-cool-primary preserve-dark"
-                    : "btn-cool-secondary border-transparent bg-transparent"
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 font-mono text-xs font-semibold ${
+                  active ? "btn-cool-primary" : "btn-cool-ghost border-transparent bg-transparent"
                 }`}
               >
                 <VIcon className="h-3.5 w-3.5" />
@@ -1692,35 +1707,35 @@ export function D3ArchitectureBlueprints({
       </div>
 
       {/* Main D3 Interactive Architecture Studio Canvas */}
-      <div className="preserve-dark relative overflow-hidden rounded-[2rem] border border-white/[0.12] bg-[#050b16] shadow-[0_30px_90px_-30px_rgba(56,189,248,0.28)]">
+      <div className="glass-panel relative overflow-hidden rounded-[2rem]">
         <div
           aria-hidden="true"
           className="bg-dot-matrix pointer-events-none absolute inset-0 opacity-30"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-sky-500/15 blur-[100px]"
+          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-sky-500/12 blur-[100px]"
         />
 
         {/* Blueprint Header */}
-        <div className="relative z-10 flex flex-wrap items-start justify-between gap-4 border-b border-white/[0.08] bg-slate-950/65 px-6 py-5 sm:px-8">
+        <div className="relative z-10 flex flex-wrap items-start justify-between gap-4 border-b border-white/[0.08] px-6 py-5 sm:px-8">
           <div>
-            <div className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-sky-400">
+            <div className="inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-sky-400">
               <Sparkles className="h-3.5 w-3.5 text-amber-400" />
               {blueprint.tag} // {currentView.label.toUpperCase()}
             </div>
             <h3 className="mt-1.5 text-xl font-semibold tracking-tight text-white sm:text-2xl">
               {blueprint.title}
             </h3>
-            <p className="mt-1 text-xs text-slate-300">{currentView.caption}</p>
+            <p className="mt-1 text-sm text-slate-300">{currentView.caption}</p>
           </div>
 
           <Link
             href={`/projects/${blueprint.slug}`}
-            className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-sky-400/35 bg-sky-400/15 px-4 py-2 font-mono text-xs font-medium text-sky-200 transition hover:bg-sky-400 hover:text-slate-950"
+            className="btn-cool-secondary inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 font-mono text-xs font-semibold"
           >
             Full Case Study
-            <ArrowUpRight className="h-3.5 w-3.5" />
+            <ArrowUpRight className="h-3.5 w-3.5 text-sky-400" />
           </Link>
         </div>
 
@@ -1735,7 +1750,7 @@ export function D3ArchitectureBlueprints({
         </div>
 
         {/* Live Node Inspector Drawer */}
-        <div className="relative z-10 border-t border-white/[0.08] bg-slate-950/85 px-6 py-5 sm:px-8">
+        <div className="relative z-10 border-t border-white/[0.08] px-6 py-5 sm:px-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={`${blueprint.id}-${viewId}-${activeNode.id}`}
@@ -1746,12 +1761,12 @@ export function D3ArchitectureBlueprints({
               className="grid gap-5 lg:grid-cols-12 lg:items-start"
             >
               <div className="lg:col-span-4">
-                <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-slate-400">
+                <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-slate-400">
                   <span
                     className="h-2.5 w-2.5 rounded-full"
                     style={{
                       backgroundColor: activeNode.color,
-                      boxShadow: `0 0 12px ${activeNode.color}`,
+                      boxShadow: `0 0 10px ${activeNode.color}`,
                     }}
                   />
                   SELECTED COMPONENT // {activeNode.badge}
@@ -1766,7 +1781,7 @@ export function D3ArchitectureBlueprints({
                   {activeNode.modules.map((m) => (
                     <span
                       key={m}
-                      className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-2.5 py-1 font-mono text-[11px] text-sky-200"
+                      className="chip-accent rounded-lg px-2.5 py-1 font-mono text-xs"
                     >
                       {m}
                     </span>
@@ -1775,22 +1790,22 @@ export function D3ArchitectureBlueprints({
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2 lg:col-span-8">
-                <div className="rounded-2xl border border-white/[0.08] bg-[#081020] p-4">
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-sky-300">
+                <div className="surface-subcard rounded-2xl p-4">
+                  <div className="flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
                     <Cpu className="h-3.5 w-3.5" />
                     Component Role &amp; Data Flow
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-200 sm:text-sm">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-200">
                     {activeNode.whatItDoes}
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-white/[0.08] bg-[#081020] p-4">
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-amber-300">
+                <div className="surface-subcard rounded-2xl p-4">
+                  <div className="flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-amber-400">
                     <Wrench className="h-3.5 w-3.5" />
                     Codebase Implementation
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-200 sm:text-sm">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-200">
                     {activeNode.howBuilt}
                   </p>
                 </div>
@@ -1803,12 +1818,12 @@ export function D3ArchitectureBlueprints({
       {/* Comprehensive 7-Section Technical Documentation Matrix + Stack */}
       <div className="grid gap-5 lg:grid-cols-12">
         <div className="glass-panel rounded-3xl p-6 sm:p-8 lg:col-span-8">
-          <div className="mb-5 flex items-center justify-between gap-2 border-b border-white/[0.08] pb-4">
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-sky-400">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-4">
+            <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
               <Workflow className="h-4 w-4" />
               Complete Technical Architecture Documentation
             </div>
-            <span className="font-mono text-[11px] text-slate-400">
+            <span className="font-mono text-xs text-slate-400">
               Audited from Production Source
             </span>
           </div>
@@ -1817,17 +1832,17 @@ export function D3ArchitectureBlueprints({
             {DOC_SECTIONS.map((sec, idx) => (
               <div
                 key={sec.key}
-                className={`rounded-2xl border border-white/[0.08] bg-slate-950/55 p-4 ${
+                className={`surface-subcard rounded-2xl p-4 ${
                   idx === DOC_SECTIONS.length - 1 ? "sm:col-span-2" : ""
                 }`}
               >
-                <div className="font-mono text-[10px] uppercase tracking-wider text-sky-400">
+                <div className="font-mono text-[11px] font-semibold uppercase tracking-wider text-sky-400">
                   {sec.tag}
                 </div>
                 <h4 className="mt-1 text-sm font-semibold text-white">
                   {sec.title}
                 </h4>
-                <p className="mt-2 text-xs leading-relaxed text-slate-300 sm:text-[13px]">
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {blueprint.documentation[sec.key]}
                 </p>
               </div>
@@ -1837,19 +1852,19 @@ export function D3ArchitectureBlueprints({
 
         <div className="glass-panel flex flex-col justify-between rounded-3xl p-6 sm:p-7 lg:col-span-4">
           <div>
-            <div className="font-mono text-xs uppercase tracking-wider text-sky-400">
+            <div className="font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
               Verified System Scale
             </div>
             <div className="mt-4 grid grid-cols-2 gap-3">
               {blueprint.verifiedMetrics.map((m) => (
                 <div
                   key={m.label}
-                  className="rounded-2xl border border-white/[0.08] bg-slate-950/60 p-3.5"
+                  className="surface-subcard rounded-2xl p-3.5"
                 >
                   <div className="font-mono text-lg font-bold text-white">
                     {m.value}
                   </div>
-                  <div className="mt-0.5 text-[11px] text-slate-400">
+                  <div className="mt-0.5 text-xs text-slate-400">
                     {m.label}
                   </div>
                 </div>
@@ -1858,7 +1873,7 @@ export function D3ArchitectureBlueprints({
           </div>
 
           <div className="mt-6 border-t border-white/[0.08] pt-5">
-            <div className="mb-3 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-slate-400">
+            <div className="mb-3 flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-slate-400">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
               Complete Technology Stack
             </div>
@@ -1866,7 +1881,7 @@ export function D3ArchitectureBlueprints({
               {blueprint.techStack.map((t) => (
                 <span
                   key={t}
-                  className="rounded-lg border border-sky-400/20 bg-sky-400/10 px-2.5 py-1 font-mono text-[11px] text-sky-300"
+                  className="chip-accent rounded-lg px-2.5 py-1 font-mono text-xs"
                 >
                   {t}
                 </span>

@@ -9,6 +9,7 @@ import {
   Command,
   Copy,
   Download,
+  Eye,
   FolderKanban,
   Moon,
   Search,
@@ -18,6 +19,8 @@ import {
 } from "lucide-react";
 import { profile, projects } from "../app/data";
 import { useTheme } from "./ThemeProvider";
+import { useResumeModal } from "./ResumeModalProvider";
+import { setSmoothScrollLocked, smoothScrollTo } from "./SmoothScroll";
 
 interface CommandItem {
   id: string;
@@ -31,6 +34,7 @@ export function QuickDock() {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
+  const { openResume } = useResumeModal();
 
   const [showTop, setShowTop] = useState(false);
   const [open, setOpen] = useState(false);
@@ -43,6 +47,11 @@ export function QuickDock() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    setSmoothScrollLocked(open);
+    return () => setSmoothScrollLocked(false);
+  }, [open]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -63,8 +72,7 @@ export function QuickDock() {
     if (pathname === "/") {
       const el = document.getElementById(id);
       if (el) {
-        const top = el.getBoundingClientRect().top + window.scrollY - 88;
-        window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+        smoothScrollTo(el, -88);
         window.history.replaceState(null, "", `/#${id}`);
         return;
       }
@@ -110,6 +118,17 @@ export function QuickDock() {
 
     const actions: CommandItem[] = [
       {
+        id: "a-resume-preview",
+        label: "Preview Resume PDF (In-App Viewer)",
+        group: "Quick Actions",
+        hint: "Preview",
+        run: () => {
+          setOpen(false);
+          setQuery("");
+          openResume();
+        },
+      },
+      {
         id: "a-theme",
         label: theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode",
         group: "Quick Actions",
@@ -137,19 +156,19 @@ export function QuickDock() {
         id: "a-resume",
         label: "Download Latest Resume (PDF)",
         group: "Quick Actions",
-        hint: "PDF",
+        hint: "Download",
         run: () => {
           setOpen(false);
           const a = document.createElement("a");
           a.href = profile.resumePath;
-          a.download = "";
+          a.download = "Mohd_Sufiyan_Resume.pdf";
           a.click();
         },
       },
     ];
 
     return [...actions, ...sections, ...caseStudies];
-  }, [pathname, router, theme, toggleTheme]);
+  }, [openResume, pathname, router, theme, toggleTheme]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -171,7 +190,7 @@ export function QuickDock() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
-            className="btn-cool-primary preserve-dark fixed bottom-20 right-5 z-50 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 font-mono text-xs font-semibold shadow-xl"
+            className="btn-cool-primary fixed bottom-20 right-5 z-50 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 font-mono text-xs font-semibold shadow-xl"
           >
             <Check className="h-3.5 w-3.5" />
             {copiedToast}
@@ -179,17 +198,27 @@ export function QuickDock() {
         )}
       </AnimatePresence>
 
-      {/* Creative Floating Bottom-Right Control Dock */}
+      {/* Floating Bottom-Right Control Dock */}
       <div className="fixed bottom-5 right-5 z-40 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={openResume}
+          aria-label="Open in-app Resume PDF preview"
+          className="btn-cool-secondary inline-flex h-11 items-center gap-2 rounded-2xl px-3.5 font-mono text-xs font-semibold shadow-lg"
+        >
+          <Eye className="h-3.5 w-3.5 text-sky-400" />
+          <span className="hidden md:inline">Resume</span>
+        </button>
+
         <button
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Open quick navigation command palette (Ctrl+K)"
-          className="glass-panel inline-flex h-11 items-center gap-2 rounded-2xl px-3.5 font-mono text-xs font-semibold text-slate-200 shadow-lg transition hover:border-sky-400/55 hover:text-white"
+          className="btn-cool-secondary inline-flex h-11 items-center gap-2 rounded-2xl px-3.5 font-mono text-xs font-semibold shadow-lg"
         >
           <Command className="h-3.5 w-3.5 text-sky-400" />
           <span className="hidden sm:inline">Quick Jump</span>
-          <kbd className="rounded-md border border-white/15 bg-white/[0.06] px-1.5 py-0.5 text-[10px]">
+          <kbd className="chip-neutral rounded-md px-1.5 py-0.5 text-[10px]">
             Ctrl K
           </kbd>
         </button>
@@ -202,9 +231,9 @@ export function QuickDock() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.85 }}
               transition={{ duration: 0.18 }}
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              onClick={() => smoothScrollTo(0)}
               aria-label="Scroll smoothly back to top"
-              className="btn-cool-primary preserve-dark inline-flex h-11 w-11 items-center justify-center rounded-2xl shadow-lg"
+              className="btn-cool-primary inline-flex h-11 w-11 items-center justify-center rounded-2xl shadow-lg"
             >
               <ArrowUp className="h-4 w-4" />
             </motion.button>
@@ -221,7 +250,7 @@ export function QuickDock() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.16 }}
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/70 px-4 pt-[12vh] backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/65 px-4 pt-[12vh] backdrop-blur-md"
           >
             <motion.div
               role="dialog"
@@ -241,7 +270,7 @@ export function QuickDock() {
                   autoFocus
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Jump to skills, D3 blueprints, projects, or actions..."
+                  placeholder="Jump to skills, resume preview, D3 blueprints, or projects..."
                   className="w-full bg-transparent text-sm text-white placeholder:text-slate-400 focus:outline-none"
                 />
                 <button
@@ -254,7 +283,7 @@ export function QuickDock() {
                 </button>
               </div>
 
-              <div className="max-h-[55vh] overflow-y-auto p-3">
+              <div data-lenis-prevent className="max-h-[55vh] overflow-y-auto p-3">
                 {filtered.length === 0 ? (
                   <div className="py-10 text-center font-mono text-xs text-slate-400">
                     No matching sections or case studies.
@@ -266,7 +295,7 @@ export function QuickDock() {
                       if (items.length === 0) return null;
                       return (
                         <div key={group} className="mb-3 last:mb-0">
-                          <div className="px-2.5 pb-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400">
+                          <div className="px-2.5 pb-1.5 font-mono text-[11px] uppercase tracking-wider text-slate-400">
                             {group}
                           </div>
                           <div className="space-y-1">
@@ -282,8 +311,10 @@ export function QuickDock() {
                                     theme === "dark" ? (
                                       <Sun className="h-4 w-4 text-amber-400" />
                                     ) : (
-                                      <Moon className="h-4 w-4 text-sky-400" />
+                                      <Moon className="h-4 w-4 text-sky-600" />
                                     )
+                                  ) : item.id === "a-resume-preview" ? (
+                                    <Eye className="h-4 w-4 text-sky-400" />
                                   ) : item.id === "a-resume" ? (
                                     <Download className="h-4 w-4 text-sky-400" />
                                   ) : item.id.startsWith("a-") ? (
@@ -291,13 +322,13 @@ export function QuickDock() {
                                   ) : item.group === "Case Studies" ? (
                                     <FolderKanban className="h-4 w-4 text-sky-400" />
                                   ) : (
-                                    <Sparkles className="h-4 w-4 text-indigo-400" />
+                                    <Sparkles className="h-4 w-4 text-sky-400" />
                                   )}
                                   <span className="font-medium">
                                     {item.label}
                                   </span>
                                 </span>
-                                <span className="font-mono text-[11px] text-slate-400">
+                                <span className="font-mono text-xs text-slate-400">
                                   {item.hint}
                                 </span>
                               </button>

@@ -15,6 +15,7 @@ import {
 import { skillGroups, type SkillGroup } from "../app/data";
 import { TiltSpotlightCard } from "./ScrollMotion";
 import { D3SkillsGraph } from "./D3SkillsGraph";
+import type { BowAccent } from "./ThreeBowCard";
 
 const icons: Record<string, typeof Server> = {
   backend: Server,
@@ -26,103 +27,109 @@ const icons: Record<string, typeof Server> = {
 };
 
 const accentBadge: Record<SkillGroup["accent"], string> = {
-  cyan: "border-indigo-400/35 bg-indigo-500/15 text-indigo-200",
-  amber: "border-amber-400/35 bg-amber-500/15 text-amber-200",
-  emerald: "border-emerald-400/35 bg-emerald-500/15 text-emerald-200",
-  violet: "border-violet-400/35 bg-violet-500/15 text-violet-200",
+  cyan: "chip-accent",
+  amber: "chip-amber",
+  emerald: "chip-emerald",
+  violet: "chip-violet",
 };
 
 const accentDot: Record<SkillGroup["accent"], string> = {
-  cyan: "bg-indigo-400",
+  cyan: "bg-sky-400",
   amber: "bg-amber-400",
   emerald: "bg-emerald-400",
   violet: "bg-violet-400",
 };
 
-const HIGHLIGHTED_SIGNATURE_SKILLS = [
+const HIGHLIGHTED_SIGNATURE_SKILLS: {
+  name: string;
+  role: string;
+  metric: string;
+  domain: string;
+  accent: BowAccent;
+}[] = [
   {
     name: "Laravel 12 & PHP 8.2",
     role: "Primary Enterprise Backend & AI SDK",
     metric: "28 Models · 22 Controllers",
     domain: "backend",
-    color: "from-indigo-500/15 to-blue-500/5 border-indigo-400/35 text-indigo-200",
+    accent: "cyan",
   },
   {
     name: "Autonomous AI Agents",
     role: "Laravel AI SDK · Custom Agentic Harness",
     metric: "39 Tools · 19 Domain Skills",
     domain: "ai-llm",
-    color: "from-violet-500/15 to-indigo-500/5 border-violet-400/35 text-violet-200",
+    accent: "violet",
   },
   {
     name: "Hybrid RAG (RRF)",
     role: "Pinecone 1024d Jina + MySQL 8 Full-Text",
     metric: "Lexical & Cosine Grounding",
     domain: "ai-llm",
-    color: "from-sky-500/15 to-cyan-500/5 border-sky-400/35 text-sky-200",
+    accent: "cyan",
   },
   {
     name: "Node.js & Express 5.2",
     role: "High-Throughput REST & Real-Time APIs",
     metric: "56 Vitest & Supertest Suites",
     domain: "backend",
-    color: "from-emerald-500/15 to-teal-500/5 border-emerald-400/35 text-emerald-200",
+    accent: "emerald",
   },
   {
     name: "Next.js 16 & React 19",
     role: "SSR Web Portals & MFA Admin Control Plane",
     metric: "TypeScript · Tailwind v4 · Zustand 5",
     domain: "frontend",
-    color: "from-indigo-500/15 to-violet-500/5 border-indigo-400/35 text-indigo-200",
+    accent: "violet",
   },
   {
     name: "React Native 0.87",
     role: "New Architecture Dual-Role Mobile Suite",
     metric: "20+ Modules · Reanimated 4 · ETag Cache",
     domain: "frontend",
-    color: "from-sky-500/15 to-blue-500/5 border-sky-400/35 text-sky-200",
+    accent: "cyan",
   },
   {
     name: "Socket.IO + Redis Mesh",
     role: "Multi-Node Pub/Sub & Live Partner Dispatch",
     metric: "Redis Adapter · Emitter · Presence",
     domain: "system-design",
-    color: "from-emerald-500/15 to-cyan-500/5 border-emerald-400/35 text-emerald-200",
+    accent: "emerald",
   },
   {
     name: "BullMQ & Priority Queues",
     role: "Async Workers, Task Slicer & Retries",
     metric: "6 BullMQ + 6 AI Queue Lanes",
     domain: "system-design",
-    color: "from-violet-500/15 to-purple-500/5 border-violet-400/35 text-violet-200",
+    accent: "violet",
   },
   {
     name: "PostgreSQL & MySQL 8",
     role: "Prisma 7 (46 Models) · 15-Model Settlement",
     metric: "Composite Indexes · lockForUpdate",
     domain: "databases",
-    color: "from-blue-500/15 to-indigo-500/5 border-blue-400/35 text-blue-200",
+    accent: "cyan",
   },
   {
     name: "Multi-LLM Failover Gateway",
     role: "Groq → Google Gemini → OpenRouter",
     metric: "429/402 Circuit Breaker · -30–50% Tokens",
     domain: "ai-llm",
-    color: "from-amber-500/15 to-orange-500/5 border-amber-400/35 text-amber-200",
+    accent: "amber",
   },
   {
     name: "3-Layer Zero-Trust Security",
     role: "RBAC · MFA Step-Up · AES-256 OAuth Vault",
     metric: "Argon2 · JWT · Zod 4 · Redis Rate Limit",
     domain: "system-design",
-    color: "from-emerald-500/15 to-teal-500/5 border-emerald-400/35 text-emerald-200",
+    accent: "emerald",
   },
   {
     name: "AWS & Observability",
     role: "EC2 · S3 Presigned · RDS · CloudFront CDN",
     metric: "PM2 · Pino · Prometheus · 145+ Tests",
     domain: "cloud-testing",
-    color: "from-indigo-500/15 to-sky-500/5 border-indigo-400/35 text-indigo-200",
+    accent: "amber",
   },
 ];
 
@@ -144,28 +151,28 @@ export function SkillsShowcase() {
 
   return (
     <div className="space-y-10">
-      {/* 1. Highlighted Signature Skills Command Deck */}
-      <div className="glass-panel relative overflow-hidden rounded-3xl p-6 sm:p-8">
+      {/* 1. Highlighted Signature Skills Command Deck (Three.js Corner-Bow Cards) */}
+      <div className="glass-panel relative overflow-hidden rounded-3xl p-5 sm:p-8">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-500/12 blur-3xl"
+          className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-sky-500/12 blur-3xl"
         />
 
         <div className="relative z-10 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] pb-4">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-indigo-400/40 bg-indigo-500/15 text-indigo-300">
+          <div className="flex items-center gap-3">
+            <span className="chip-accent flex h-9 w-9 items-center justify-center rounded-xl">
               <Sparkles className="h-4 w-4" />
             </span>
             <div>
-              <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-indigo-300">
-                Highlighted Core Stack &amp; Production Specialties
+              <div className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-sky-400">
+                Highlighted Core Stack &amp; Specialties
               </div>
               <h3 className="text-lg font-semibold text-white sm:text-xl">
                 12 Signature Engineering Capabilities
               </h3>
             </div>
           </div>
-          <span className="rounded-full border border-emerald-400/35 bg-emerald-400/10 px-3 py-1 font-mono text-xs font-medium text-emerald-300">
+          <span className="chip-emerald rounded-full px-3 py-1 font-mono text-xs font-semibold">
             5.5+ Years Production Verified
           </span>
         </div>
@@ -174,36 +181,41 @@ export function SkillsShowcase() {
           {HIGHLIGHTED_SIGNATURE_SKILLS.map((item) => {
             const isDomainActive =
               selected === "all" || selected === item.domain;
+            const isSpecificallySelected = selected === item.domain;
             return (
-              <button
+              <TiltSpotlightCard
                 key={item.name}
-                type="button"
-                onClick={() =>
-                  setSelected(selected === item.domain ? "all" : item.domain)
-                }
-                className={`group relative flex flex-col justify-between rounded-2xl border bg-gradient-to-br p-4 text-left transition-all duration-200 hover:-translate-y-0.5 ${
-                  item.color
-                } ${
-                  isDomainActive
-                    ? "opacity-100 shadow-[0_10px_28px_-16px_rgba(99,102,241,0.4)]"
-                    : "opacity-45 hover:opacity-90"
-                }`}
+                accent={item.accent}
+                maxTilt={7.5}
+                className={`rounded-2xl transition-opacity duration-200 ${
+                  isSpecificallySelected
+                    ? "ring-2 ring-sky-400/70"
+                    : ""
+                } ${isDomainActive ? "opacity-100" : "opacity-45 hover:opacity-95"}`}
               >
-                <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-bold tracking-tight text-white">
-                      {item.name}
-                    </span>
-                    <Zap className="h-3.5 w-3.5 shrink-0 opacity-75 transition group-hover:opacity-100" />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelected(selected === item.domain ? "all" : item.domain)
+                  }
+                  className="group flex h-full w-full flex-col justify-between p-4 text-left"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-semibold tracking-tight text-white">
+                        {item.name}
+                      </span>
+                      <Zap className="h-3.5 w-3.5 shrink-0 text-sky-400 opacity-75 transition group-hover:opacity-100" />
+                    </div>
+                    <p className="mt-1.5 text-xs leading-relaxed text-slate-300">
+                      {item.role}
+                    </p>
                   </div>
-                  <p className="mt-1 text-xs leading-snug text-slate-300">
-                    {item.role}
-                  </p>
-                </div>
-                <div className="mt-3 inline-flex w-fit items-center rounded-lg border border-white/10 bg-slate-950/65 px-2.5 py-1 font-mono text-[10px] text-slate-200">
-                  {item.metric}
-                </div>
-              </button>
+                  <div className="chip-neutral mt-3 inline-flex w-fit items-center rounded-lg px-2.5 py-1 font-mono text-[11px]">
+                    {item.metric}
+                  </div>
+                </button>
+              </TiltSpotlightCard>
             );
           })}
         </div>
@@ -212,7 +224,7 @@ export function SkillsShowcase() {
       {/* 2. Interactive D3.js Force-Directed Skill Network */}
       <D3SkillsGraph activeDomain={selected} onSelectDomain={setSelected} />
 
-      {/* 3. Domain Filter Bar (Cool Indigo-Cobalt active pill with crisp white text) */}
+      {/* 3. Domain Filter Bar */}
       <div
         role="tablist"
         aria-label="Filter technical skills by domain"
@@ -227,10 +239,8 @@ export function SkillsShowcase() {
               role="tab"
               aria-selected={active}
               onClick={() => setSelected(tab.id)}
-              className={`relative min-h-[42px] rounded-xl px-4 py-2 text-xs font-semibold transition sm:text-sm ${
-                active
-                  ? "btn-cool-primary preserve-dark"
-                  : "btn-cool-secondary"
+              className={`relative min-h-[42px] rounded-xl px-4 py-2 text-xs font-semibold sm:text-sm ${
+                active ? "btn-cool-primary" : "btn-cool-secondary"
               }`}
             >
               {tab.label}
@@ -239,7 +249,7 @@ export function SkillsShowcase() {
         })}
       </div>
 
-      {/* 4. Skill Clusters (2-column internal grid where odd last item automatically spans full width so there is never an empty slot) */}
+      {/* 4. Skill Clusters */}
       <div
         className={`grid gap-5 ${
           selected === "all"
@@ -254,12 +264,13 @@ export function SkillsShowcase() {
             <TiltSpotlightCard
               key={group.id}
               accent={group.accent}
+              maxTilt={5.5}
               className="rounded-3xl p-6"
             >
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border ${accentBadge[group.accent]}`}
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${accentBadge[group.accent]}`}
                   >
                     <Icon className="h-5 w-5" />
                   </div>
@@ -267,12 +278,12 @@ export function SkillsShowcase() {
                     <h3 className="text-lg font-semibold tracking-tight text-white">
                       {group.title}
                     </h3>
-                    <p className="mt-0.5 text-xs text-slate-400">
+                    <p className="mt-0.5 text-xs leading-snug text-slate-400">
                       {group.subtitle}
                     </p>
                   </div>
                 </div>
-                <span className="shrink-0 rounded-lg border border-white/[0.1] bg-slate-950/75 px-2.5 py-1 font-mono text-xs font-semibold text-indigo-300">
+                <span className="chip-accent shrink-0 rounded-lg px-2.5 py-1 font-mono text-xs font-semibold">
                   {group.items.length}
                 </span>
               </div>
@@ -284,7 +295,7 @@ export function SkillsShowcase() {
                   return (
                     <div
                       key={skill.name}
-                      className={`group flex items-start justify-between gap-3 rounded-xl border border-white/[0.07] bg-slate-950/60 px-3.5 py-2.5 transition hover:border-indigo-400/35 hover:bg-slate-900/90 ${
+                      className={`surface-subcard flex items-start justify-between gap-3 rounded-xl px-3.5 py-2.5 ${
                         isLastOdd ? "sm:col-span-2" : ""
                       }`}
                     >
@@ -296,7 +307,7 @@ export function SkillsShowcase() {
                           <div className="text-sm font-semibold text-slate-100">
                             {skill.name}
                           </div>
-                          <div className="font-mono text-[11px] text-slate-400">
+                          <div className="font-mono text-xs text-slate-400">
                             {skill.context}
                           </div>
                         </div>

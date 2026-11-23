@@ -41,6 +41,7 @@ import { D3ArchitectureBlueprints } from "../components/D3ArchitectureBlueprints
 import { D3GitHubShowcase } from "../components/D3GitHubShowcase";
 import { ArchitectureShowcase } from "../components/ArchitectureShowcase";
 import { ContactHub } from "../components/ContactHub";
+import { ResumePreviewButton } from "../components/ResumeModalProvider";
 
 export const revalidate = 3600;
 
@@ -48,9 +49,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-// Fluid full-width container for all page sections (while keeping Navbar header at max-w-7xl)
-const FLUID_CONTAINER =
-  "mx-auto w-full max-w-[1680px] px-4 sm:px-8 lg:px-14 xl:px-20";
+// Unified, balanced architectural grid width matching Navbar & Footer (1280px max)
+const CONTAINER = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
 
 export default async function HomePage() {
   const githubData = await getGitHubPortfolioData();
@@ -155,33 +155,33 @@ export default async function HomePage() {
       {/* Ambient Top Grid + Aurora Layer */}
       <div
         aria-hidden="true"
-        className="aurora-hero bg-grid-pattern pointer-events-none absolute inset-x-0 top-0 h-[980px] [mask-image:linear-gradient(to_bottom,black_55%,transparent_100%)]"
+        className="aurora-hero bg-grid-pattern pointer-events-none absolute inset-x-0 top-0 h-[920px] [mask-image:linear-gradient(to_bottom,black_55%,transparent_100%)]"
       />
 
       {/* ================================================================
-          1. HERO SECTION (3D Neural Core + Scroll Parallax + Animated Stats)
+          1. HERO SECTION (3D Neural Core + Impact Telemetry Strip)
       ================================================================ */}
       <section
         aria-label="Introduction"
-        className={`relative ${FLUID_CONTAINER} pb-16 pt-28 sm:pt-32 lg:pb-24 lg:pt-36`}
+        className={`relative ${CONTAINER} pb-16 pt-28 sm:pt-32 lg:pb-20 lg:pt-36`}
       >
-        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+        <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-10">
           {/* Left Narrative */}
           <div className="lg:col-span-7">
             <Reveal delay={0.02} direction="left">
-              <div className="inline-flex flex-wrap items-center gap-2 rounded-full border border-sky-400/30 bg-sky-400/10 px-3.5 py-1.5 font-mono text-xs text-sky-200 shadow-[0_0_24px_-8px_rgba(56,189,248,0.6)]">
+              <div className="chip-accent inline-flex flex-wrap items-center gap-2 rounded-full px-3.5 py-1.5 font-mono text-xs font-medium">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]" />
                 <span>{profile.role}</span>
-                <span className="text-slate-500">·</span>
-                <span className="inline-flex items-center gap-1 text-slate-300">
-                  <MapPin className="h-3 w-3 text-sky-400" />
+                <span className="opacity-50">·</span>
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
                   Noida, India
                 </span>
               </div>
             </Reveal>
 
             <Reveal delay={0.08} direction="up">
-              <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-[4.15rem] lg:leading-[1.04]">
+              <h1 className="mt-6 text-3xl font-semibold tracking-[-0.025em] text-white sm:text-5xl lg:text-[3.5rem] lg:leading-[1.08]">
                 Engineering{" "}
                 <span className="text-gradient-hero">Scalable Platforms</span>
                 <br />
@@ -190,7 +190,7 @@ export default async function HomePage() {
             </Reveal>
 
             <Reveal delay={0.14} direction="up">
-              <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
+              <p className="mt-6 max-w-[60ch] text-base leading-[1.7] text-slate-300 sm:text-lg">
                 I&apos;m{" "}
                 <strong className="font-semibold text-white">
                   {profile.name}
@@ -200,7 +200,7 @@ export default async function HomePage() {
                 architecting production Laravel, Node.js, Next.js, and React
                 Native systems—from horizontally scaled WebSocket &amp; queue
                 backends to a{" "}
-                <span className="text-sky-300">
+                <span className="font-medium text-sky-400">
                   39-tool Autonomous LLM Agent
                 </span>{" "}
                 and Hybrid RAG pipelines.
@@ -208,43 +208,42 @@ export default async function HomePage() {
             </Reveal>
 
             <Reveal delay={0.2} direction="up">
-              <div className="mt-8 flex flex-wrap items-center gap-3.5">
+              <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Link
                   href="#skills"
-                  className="btn-cool-primary preserve-dark inline-flex min-h-[48px] items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold"
+                  className="btn-cool-primary inline-flex min-h-[46px] items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
                 >
-                  Explore Highlighted Skills
+                  Explore Skills
                   <ArrowRight className="h-4 w-4" />
                 </Link>
 
+                <ResumePreviewButton
+                  label="Review Resume PDF"
+                  variant="secondary"
+                  icon="eye"
+                />
+
                 <a
                   href={profile.resumePath}
-                  download
-                  className="btn-cool-secondary inline-flex min-h-[48px] items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
+                  download="Mohd_Sufiyan_Resume.pdf"
+                  className="btn-cool-ghost inline-flex min-h-[46px] items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold"
                 >
                   <Download className="h-4 w-4 text-sky-400" />
-                  Download Resume
+                  Download
                 </a>
-
-                <Link
-                  href="#flagship-studio"
-                  className="btn-cool-secondary inline-flex min-h-[48px] items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
-                >
-                  D3.js Architecture Studio
-                </Link>
               </div>
             </Reveal>
           </div>
 
-          {/* Right Interactive 3D Neural Systems Core with Scroll Parallax */}
+          {/* Right Interactive 3D Neural Systems Core */}
           <Reveal delay={0.14} direction="scale" className="lg:col-span-5">
-            <ScrollParallax offset={26}>
+            <ScrollParallax offset={24}>
               <HeroScene />
             </ScrollParallax>
           </Reveal>
         </div>
 
-        {/* Animated Impact Telemetry Strip */}
+        {/* Animated Impact Telemetry Strip (Three.js Corner-Bow Cards) */}
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {heroMetrics.map((metric, idx) => (
             <Reveal key={metric.label} delay={0.05 * idx} direction="up">
@@ -258,10 +257,10 @@ export default async function HomePage() {
                         ? "violet"
                         : "cyan"
                 }
-                maxTilt={4.5}
+                maxTilt={7.5}
                 className="h-full rounded-2xl p-5"
               >
-                <div className="font-mono text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                <div className="font-mono text-3xl font-bold tracking-tight text-white sm:text-[2.15rem]">
                   <AnimatedStat
                     target={metric.numericTarget}
                     prefix={metric.prefix ?? ""}
@@ -270,10 +269,10 @@ export default async function HomePage() {
                     fallback={metric.value}
                   />
                 </div>
-                <div className="mt-1.5 text-sm font-medium text-slate-200">
+                <div className="mt-2 text-sm font-semibold text-slate-200">
                   {metric.label}
                 </div>
-                <div className="mt-1 font-mono text-[11px] text-slate-400">
+                <div className="mt-1 font-mono text-xs text-slate-400">
                   {metric.detail}
                 </div>
               </TiltSpotlightCard>
@@ -283,23 +282,22 @@ export default async function HomePage() {
       </section>
 
       {/* ================================================================
-          2. HIGHLIGHTED TECHNICAL SKILLS + ANIMATED D3.JS FORCE NETWORK
-             (Placed immediately after the first section as requested!)
+          2. HIGHLIGHTED TECHNICAL SKILLS + D3.JS FORCE NETWORK
       ================================================================ */}
       <section
         id="skills"
         aria-labelledby="skills-heading"
-        className={`${FLUID_CONTAINER} border-t border-white/[0.08] py-20 lg:py-28`}
+        className={`${CONTAINER} border-t border-white/[0.08] py-16 sm:py-20 lg:py-24`}
       >
         <Reveal direction="up">
           <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div className="max-w-2xl">
-              <p className="font-mono text-xs uppercase tracking-[0.18em] text-sky-400">
+              <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
                 01 // Highlighted Skills &amp; D3.js Physics Network
               </p>
               <h2
                 id="skills-heading"
-                className="mt-2.5 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl"
+                className="mt-2.5 text-2xl font-semibold tracking-[-0.02em] text-white sm:text-3xl lg:text-[2.5rem] lg:leading-[1.15]"
               >
                 Core Engineering{" "}
                 <span className="text-gradient-cyan">
@@ -307,7 +305,7 @@ export default async function HomePage() {
                 </span>
               </h2>
             </div>
-            <p className="max-w-sm text-sm text-slate-400">
+            <p className="max-w-[42ch] text-sm leading-relaxed text-slate-400 sm:text-[15px]">
               Click any highlighted specialty card, drag floating physics nodes
               in the D3.js network, or filter by engineering domain.
             </p>
@@ -320,21 +318,21 @@ export default async function HomePage() {
       </section>
 
       {/* ================================================================
-          3. ABOUT ME & ENGINEERING PHILOSOPHY (Asymmetric Bento)
+          3. ABOUT ME & ENGINEERING PHILOSOPHY
       ================================================================ */}
       <section
         id="about"
         aria-labelledby="about-heading"
-        className={`${FLUID_CONTAINER} border-t border-white/[0.08] py-20 lg:py-28`}
+        className={`${CONTAINER} border-t border-white/[0.08] py-16 sm:py-20 lg:py-24`}
       >
         <Reveal direction="left">
           <div className="mb-10 max-w-2xl">
-            <p className="font-mono text-xs uppercase tracking-[0.18em] text-sky-400">
+            <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
               02 // About &amp; Philosophy
             </p>
             <h2
               id="about-heading"
-              className="mt-2.5 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl"
+              className="mt-2.5 text-2xl font-semibold tracking-[-0.02em] text-white sm:text-3xl lg:text-[2.5rem] lg:leading-[1.15]"
             >
               Systems engineered for{" "}
               <span className="text-gradient-cyan">production reality.</span>
@@ -346,10 +344,10 @@ export default async function HomePage() {
           <Reveal direction="left" className="lg:col-span-7">
             <TiltSpotlightCard
               accent="cyan"
-              maxTilt={3}
-              className="h-full rounded-3xl p-7 sm:p-9"
+              maxTilt={4.5}
+              className="h-full rounded-3xl p-6 sm:p-8"
             >
-              <div className="inline-flex items-center gap-2 rounded-lg border border-sky-400/25 bg-sky-400/10 px-3 py-1 font-mono text-xs text-sky-300">
+              <div className="chip-accent inline-flex items-center gap-2 rounded-lg px-3 py-1 font-mono text-xs font-medium">
                 <Terminal className="h-3.5 w-3.5" />
                 5.5+ Years Full-Stack Progression
               </div>
@@ -361,17 +359,22 @@ export default async function HomePage() {
                 autonomous multi-tool enterprise AI agents.
               </p>
 
-              <p className="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
+              <p className="mt-4 text-sm leading-[1.7] text-slate-300 sm:text-base">
                 Across roles at{" "}
-                <span className="text-white">I3 Infosoft Pvt. Ltd.</span> and{" "}
-                <span className="text-white">Adtric Solution Pvt. Ltd.</span>, I
-                have owned full delivery lifecycles—schema design and composite
-                indexing, secure REST &amp; WebSocket APIs, OAuth 2.0 enterprise
-                connectors, AWS CloudFront/S3 infrastructure, and production
-                observability.
+                <strong className="font-semibold text-white">
+                  I3 Infosoft Pvt. Ltd.
+                </strong>{" "}
+                and{" "}
+                <strong className="font-semibold text-white">
+                  Adtric Solution Pvt. Ltd.
+                </strong>
+                , I have owned full delivery lifecycles—schema design and
+                composite indexing, secure REST &amp; WebSocket APIs, OAuth 2.0
+                enterprise connectors, AWS CloudFront/S3 infrastructure, and
+                production observability.
               </p>
 
-              <p className="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
+              <p className="mt-4 text-sm leading-[1.7] text-slate-300 sm:text-base">
                 I design around real-world failure modes: two workers mutating
                 the same row simultaneously, an upstream LLM hitting 429/402
                 limits mid-workflow, or slow email/notification jobs blocking
@@ -380,27 +383,27 @@ export default async function HomePage() {
               </p>
 
               <div className="mt-7 grid gap-3 border-t border-white/[0.08] pt-6 sm:grid-cols-3">
-                <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3.5">
-                  <div className="font-mono text-xs text-sky-300">
+                <div className="surface-subcard rounded-xl p-3.5">
+                  <div className="font-mono text-xs font-semibold text-sky-400">
                     Backend Core
                   </div>
-                  <div className="mt-1 text-sm font-medium text-white">
+                  <div className="mt-1 text-sm font-semibold text-white">
                     Laravel 12 &amp; Node.js
                   </div>
                 </div>
-                <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3.5">
-                  <div className="font-mono text-xs text-orange-300">
+                <div className="surface-subcard rounded-xl p-3.5">
+                  <div className="font-mono text-xs font-semibold text-amber-400">
                     Applied AI
                   </div>
-                  <div className="mt-1 text-sm font-medium text-white">
+                  <div className="mt-1 text-sm font-semibold text-white">
                     Hybrid RAG &amp; Agents
                   </div>
                 </div>
-                <div className="rounded-xl border border-white/[0.07] bg-slate-950/60 p-3.5">
-                  <div className="font-mono text-xs text-emerald-300">
+                <div className="surface-subcard rounded-xl p-3.5">
+                  <div className="font-mono text-xs font-semibold text-emerald-400">
                     Scale &amp; Ops
                   </div>
-                  <div className="mt-1 text-sm font-medium text-white">
+                  <div className="mt-1 text-sm font-semibold text-white">
                     Redis · BullMQ · AWS
                   </div>
                 </div>
@@ -412,18 +415,18 @@ export default async function HomePage() {
             <Reveal delay={0.08} direction="right">
               <TiltSpotlightCard
                 accent="amber"
-                maxTilt={3.5}
+                maxTilt={5.5}
                 className="rounded-3xl p-6 sm:p-7"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-400/30 bg-orange-400/10 text-orange-300">
+                  <div className="chip-amber flex h-10 w-10 items-center justify-center rounded-xl">
                     <Shield className="h-5 w-5" />
                   </div>
                   <h3 className="text-lg font-semibold text-white">
                     Engineering Principles
                   </h3>
                 </div>
-                <ul className="mt-4 space-y-3 text-sm text-slate-300">
+                <ul className="mt-4 space-y-3.5 text-sm leading-relaxed text-slate-300">
                   <li className="flex items-start gap-2.5">
                     <Zap className="mt-0.5 h-4 w-4 shrink-0 text-sky-400" />
                     <span>
@@ -433,7 +436,7 @@ export default async function HomePage() {
                     </span>
                   </li>
                   <li className="flex items-start gap-2.5">
-                    <Cpu className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
+                    <Cpu className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
                     <span>
                       <strong className="text-white">
                         Grounded AI, not hype:
@@ -459,16 +462,16 @@ export default async function HomePage() {
             <Reveal delay={0.14} direction="right">
               <TiltSpotlightCard
                 accent="emerald"
-                maxTilt={3.5}
+                maxTilt={5.5}
                 className="rounded-3xl p-6 sm:p-7"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-400/30 bg-emerald-400/10 text-emerald-300">
+                    <div className="chip-emerald flex h-10 w-10 items-center justify-center rounded-xl">
                       <GraduationCap className="h-5 w-5" />
                     </div>
                     <div>
-                      <div className="font-mono text-[11px] uppercase tracking-wider text-emerald-300">
+                      <div className="font-mono text-xs font-semibold uppercase tracking-wider text-emerald-400">
                         Education &amp; Honors
                       </div>
                       <h3 className="text-base font-semibold text-white">
@@ -476,15 +479,15 @@ export default async function HomePage() {
                       </h3>
                     </div>
                   </div>
-                  <span className="rounded-lg border border-white/[0.08] bg-slate-950/70 px-2.5 py-1 font-mono text-[11px] text-slate-400">
+                  <span className="chip-neutral rounded-lg px-2.5 py-1 font-mono text-xs">
                     {profile.education.period}
                   </span>
                 </div>
                 <p className="mt-2.5 text-sm text-slate-300">
                   {profile.education.institution}
                 </p>
-                <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-orange-400/25 bg-orange-400/10 px-3.5 py-2.5 text-xs text-orange-200">
-                  <Trophy className="h-4 w-4 shrink-0 text-orange-300" />
+                <div className="chip-amber mt-4 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-medium">
+                  <Trophy className="h-4 w-4 shrink-0" />
                   <span>
                     Developer of the Year 2024 · Vintage Warrior · GemsBond
                   </span>
@@ -501,17 +504,17 @@ export default async function HomePage() {
       <section
         id="flagship-studio"
         aria-labelledby="studio-heading"
-        className={`${FLUID_CONTAINER} border-t border-white/[0.08] py-20 lg:py-28`}
+        className={`${CONTAINER} border-t border-white/[0.08] py-16 sm:py-20 lg:py-24`}
       >
         <Reveal direction="up">
           <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div className="max-w-2xl">
-              <p className="font-mono text-xs uppercase tracking-[0.18em] text-sky-400">
+              <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
                 03 // Interactive 4-Layer D3.js System Blueprints
               </p>
               <h2
                 id="studio-heading"
-                className="mt-2.5 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl"
+                className="mt-2.5 text-2xl font-semibold tracking-[-0.02em] text-white sm:text-3xl lg:text-[2.5rem] lg:leading-[1.15]"
               >
                 Flagship Systems{" "}
                 <span className="text-gradient-cyan">
@@ -519,7 +522,7 @@ export default async function HomePage() {
                 </span>
               </h2>
             </div>
-            <p className="max-w-md text-sm text-slate-400">
+            <p className="max-w-[44ch] text-sm leading-relaxed text-slate-400 sm:text-[15px]">
               Switch across 3 flagship platforms and 4 D3.js architectural views
               (<strong className="text-slate-200">High-Level Flow</strong>,{" "}
               <strong className="text-slate-200">Auth &amp; Security</strong>,{" "}
@@ -541,22 +544,22 @@ export default async function HomePage() {
       <section
         id="projects"
         aria-labelledby="projects-heading"
-        className={`${FLUID_CONTAINER} border-t border-white/[0.08] py-20 lg:py-28`}
+        className={`${CONTAINER} border-t border-white/[0.08] py-16 sm:py-20 lg:py-24`}
       >
         <Reveal direction="up">
           <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div className="max-w-2xl">
-              <p className="font-mono text-xs uppercase tracking-[0.18em] text-sky-400">
+              <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
                 04 // Production Systems &amp; Case Studies
               </p>
               <h2
                 id="projects-heading"
-                className="mt-2.5 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl"
+                className="mt-2.5 text-2xl font-semibold tracking-[-0.02em] text-white sm:text-3xl lg:text-[2.5rem] lg:leading-[1.15]"
               >
                 Featured <span className="text-gradient-cyan">Projects.</span>
               </h2>
             </div>
-            <p className="max-w-sm text-sm text-slate-400">
+            <p className="max-w-[42ch] text-sm leading-relaxed text-slate-400 sm:text-[15px]">
               Switch between Overview, Challenge, Architecture, and Impact on
               any flagship system, or open the full case study.
             </p>
@@ -569,23 +572,24 @@ export default async function HomePage() {
       </section>
 
       {/* ================================================================
-          6. PROFESSIONAL EXPERIENCE (SCROLL-DRIVEN LASER TIMELINE)
+          6. PROFESSIONAL EXPERIENCE
       ================================================================ */}
       <section
         id="experience"
         aria-labelledby="experience-heading"
-        className={`${FLUID_CONTAINER} border-t border-white/[0.08] py-20 lg:py-28`}
+        className={`${CONTAINER} border-t border-white/[0.08] py-16 sm:py-20 lg:py-24`}
       >
         <Reveal direction="left">
-          <div className="mb-12 max-w-2xl">
-            <p className="font-mono text-xs uppercase tracking-[0.18em] text-sky-400">
+          <div className="mb-10 max-w-2xl">
+            <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
               05 // Career Trajectory
             </p>
             <h2
               id="experience-heading"
-              className="mt-2.5 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl"
+              className="mt-2.5 text-2xl font-semibold tracking-[-0.02em] text-white sm:text-3xl lg:text-[2.5rem] lg:leading-[1.15]"
             >
-              Professional <span className="text-gradient-cyan">Experience.</span>
+              Professional{" "}
+              <span className="text-gradient-cyan">Experience.</span>
             </h2>
           </div>
         </Reveal>
@@ -599,33 +603,33 @@ export default async function HomePage() {
                   className={`absolute left-[13px] top-8 hidden h-4 w-4 rounded-full border-2 md:block ${
                     job.current
                       ? "border-sky-200 bg-sky-400 shadow-[0_0_20px_#38bdf8]"
-                      : "border-orange-300 bg-orange-400/90 shadow-[0_0_16px_rgba(251,146,60,0.65)]"
+                      : "border-amber-300 bg-amber-400 shadow-[0_0_16px_rgba(251,146,60,0.65)]"
                   }`}
                 />
 
                 <TiltSpotlightCard
                   accent={job.current ? "cyan" : "emerald"}
-                  maxTilt={2.5}
+                  maxTilt={3.2}
                   className="rounded-3xl p-6 sm:p-8"
                 >
                   <div className="flex flex-col justify-between gap-4 border-b border-white/[0.08] pb-6 sm:flex-row sm:items-start">
                     <div>
                       <div className="flex flex-wrap items-center gap-2.5">
-                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-sky-400/25 bg-sky-400/10 px-2.5 py-1 font-mono text-xs text-sky-300">
+                        <span className="chip-accent inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs font-medium">
                           <Briefcase className="h-3.5 w-3.5" />
                           {job.role}
                         </span>
                         {job.current && (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 font-mono text-[11px] text-emerald-300">
+                          <span className="chip-emerald inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-xs font-medium">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                             Current Role
                           </span>
                         )}
                       </div>
-                      <h3 className="mt-3 text-2xl font-semibold tracking-tight text-white">
+                      <h3 className="mt-3 text-xl font-semibold tracking-tight text-white sm:text-2xl">
                         {job.company}
                       </h3>
-                      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-300">
+                      <p className="mt-2 max-w-[65ch] text-sm leading-relaxed text-slate-300 sm:text-[15px]">
                         {job.summary}
                       </p>
                     </div>
@@ -646,14 +650,14 @@ export default async function HomePage() {
                       return (
                         <div
                           key={item.title}
-                          className={`rounded-2xl border border-white/[0.07] bg-slate-950/60 p-4 transition hover:border-indigo-400/35 ${
+                          className={`surface-subcard rounded-2xl p-4 ${
                             isLastOdd ? "md:col-span-2" : ""
                           }`}
                         >
-                          <h4 className="text-sm font-semibold text-white">
+                          <h4 className="text-sm font-semibold text-white sm:text-[15px]">
                             {item.title}
                           </h4>
-                          <p className="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
+                          <p className="mt-1.5 text-sm leading-relaxed text-slate-300">
                             {item.detail}
                           </p>
                         </div>
@@ -662,17 +666,17 @@ export default async function HomePage() {
                   </div>
 
                   {job.recognition && (
-                    <div className="mt-5 flex items-center gap-2.5 rounded-xl border border-orange-400/25 bg-orange-400/10 px-4 py-3 text-xs font-medium text-orange-200 sm:text-sm">
-                      <Award className="h-4 w-4 shrink-0 text-orange-300" />
+                    <div className="chip-amber mt-5 flex items-center gap-2.5 rounded-xl px-4 py-3 text-xs font-medium sm:text-sm">
+                      <Award className="h-4 w-4 shrink-0" />
                       <span>Recognition: {job.recognition}</span>
                     </div>
                   )}
 
-                  <div className="mt-6 flex flex-wrap gap-1.5 border-t border-white/[0.07] pt-5">
+                  <div className="mt-6 flex flex-wrap gap-1.5 border-t border-white/[0.08] pt-5">
                     {job.stack.map((tech) => (
                       <span
                         key={tech}
-                        className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 font-mono text-[11px] text-slate-300"
+                        className="chip-neutral rounded-lg px-2.5 py-1 font-mono text-xs"
                       >
                         {tech}
                       </span>
@@ -691,23 +695,23 @@ export default async function HomePage() {
       <section
         id="github"
         aria-labelledby="github-heading"
-        className={`${FLUID_CONTAINER} border-t border-white/[0.08] py-20 lg:py-28`}
+        className={`${CONTAINER} border-t border-white/[0.08] py-16 sm:py-20 lg:py-24`}
       >
         <Reveal direction="up">
           <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div className="max-w-2xl">
-              <p className="font-mono text-xs uppercase tracking-[0.18em] text-sky-400">
+              <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
                 06 // Exact GitHub Profile Calendar &amp; Private Systems
               </p>
               <h2
                 id="github-heading"
-                className="mt-2.5 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl"
+                className="mt-2.5 text-2xl font-semibold tracking-[-0.02em] text-white sm:text-3xl lg:text-[2.5rem] lg:leading-[1.15]"
               >
                 GitHub Contributions &amp;{" "}
                 <span className="text-gradient-cyan">Private Systems.</span>
               </h2>
             </div>
-            <p className="max-w-sm text-sm text-slate-400">
+            <p className="max-w-[42ch] text-sm leading-relaxed text-slate-400 sm:text-[15px]">
               Live 52-week contribution square calendar synced directly from
               GitHub while keeping private client repositories confidential.
             </p>
@@ -725,16 +729,16 @@ export default async function HomePage() {
       <section
         id="architecture"
         aria-labelledby="architecture-heading"
-        className={`${FLUID_CONTAINER} border-t border-white/[0.08] py-20 lg:py-28`}
+        className={`${CONTAINER} border-t border-white/[0.08] py-16 sm:py-20 lg:py-24`}
       >
         <Reveal direction="left">
           <div className="mb-10 max-w-2xl">
-            <p className="font-mono text-xs uppercase tracking-[0.18em] text-sky-400">
+            <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
               07 // Engineering &amp; System Architecture
             </p>
             <h2
               id="architecture-heading"
-              className="mt-2.5 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl"
+              className="mt-2.5 text-2xl font-semibold tracking-[-0.02em] text-white sm:text-3xl lg:text-[2.5rem] lg:leading-[1.15]"
             >
               How I architect for{" "}
               <span className="text-gradient-cyan">
@@ -755,16 +759,16 @@ export default async function HomePage() {
       <section
         id="achievements"
         aria-labelledby="achievements-heading"
-        className={`${FLUID_CONTAINER} border-t border-white/[0.08] py-20 lg:py-28`}
+        className={`${CONTAINER} border-t border-white/[0.08] py-16 sm:py-20 lg:py-24`}
       >
         <Reveal direction="up">
           <div className="mb-10 max-w-2xl">
-            <p className="font-mono text-xs uppercase tracking-[0.18em] text-sky-400">
+            <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
               08 // Recognition &amp; Measurable Outcomes
             </p>
             <h2
               id="achievements-heading"
-              className="mt-2.5 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl"
+              className="mt-2.5 text-2xl font-semibold tracking-[-0.02em] text-white sm:text-3xl lg:text-[2.5rem] lg:leading-[1.15]"
             >
               Awards &amp;{" "}
               <span className="text-gradient-cyan">Career Highlights.</span>
@@ -783,23 +787,23 @@ export default async function HomePage() {
                       ? "emerald"
                       : "cyan"
                 }
-                maxTilt={4}
+                maxTilt={6.5}
                 className="flex h-full flex-col justify-between rounded-2xl p-6"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2">
                     <span
-                      className={`rounded-full border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider ${
+                      className={`rounded-full px-2.5 py-0.5 font-mono text-[11px] font-semibold uppercase tracking-wider ${
                         item.category === "Honor"
-                          ? "border-orange-400/30 bg-orange-400/10 text-orange-300"
+                          ? "chip-amber"
                           : item.category === "Education"
-                            ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
-                            : "border-sky-400/30 bg-sky-400/10 text-sky-300"
+                            ? "chip-emerald"
+                            : "chip-accent"
                       }`}
                     >
                       {item.category}
                     </span>
-                    <span className="font-mono text-xs text-slate-500">
+                    <span className="font-mono text-xs text-slate-400">
                       {item.year}
                     </span>
                   </div>
@@ -821,12 +825,12 @@ export default async function HomePage() {
       </section>
 
       {/* ================================================================
-          10. DIRECT CONTACT HUB (ZERO FORM)
+          10. DIRECT CONTACT HUB
       ================================================================ */}
       <section
         id="contact"
         aria-label="Direct Contact"
-        className={`${FLUID_CONTAINER} border-t border-white/[0.08] py-20 lg:py-28`}
+        className={`${CONTAINER} border-t border-white/[0.08] py-16 sm:py-20 lg:py-24`}
       >
         <ScrollDepthFrame>
           <ContactHub />

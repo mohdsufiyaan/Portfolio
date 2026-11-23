@@ -8,7 +8,19 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: "/:path*",
+        source: "/mohd-sufiyan-resume.pdf",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self'; base-uri 'self'",
+          },
+        ],
+      },
+      {
+        source: "/((?!mohd-sufiyan-resume\\.pdf$).*)",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },

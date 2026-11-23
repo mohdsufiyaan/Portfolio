@@ -2,10 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play, Sparkles } from "lucide-react";
+import { useTheme } from "./ThemeProvider";
 
 type EngineMode = "Initializing" | "WebGPU Ready · WebGL2" | "WebGL2 GPU" | "Static Vector";
 
 export function HeroScene() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [reducedMotion] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -27,7 +31,6 @@ export function HeroScene() {
       loading = true;
 
       try {
-        // Progressive WebGPU capability probe (non-blocking, WebGL2 primary renderer for universal support)
         let webGpuAvailable = false;
         if (typeof navigator !== "undefined" && "gpu" in navigator) {
           try {
@@ -50,7 +53,7 @@ export function HeroScene() {
         });
         renderer.setClearColor(0x000000, 0);
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.15;
+        renderer.toneMappingExposure = isDark ? 1.15 : 1.08;
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 40);
@@ -59,23 +62,27 @@ export function HeroScene() {
         const root = new THREE.Group();
         scene.add(root);
 
-        // Lighting rig: cool cyan key + warm amber rim + soft ambient fill
-        const ambient = new THREE.AmbientLight(0x93c5fd, 0.65);
-        const keyLight = new THREE.DirectionalLight(0x38bdf8, 2.2);
+        // Theme-adaptive lighting & material palette
+        const primaryHex = isDark ? 0x38bdf8 : 0x0284c7;
+        const secondaryHex = isDark ? 0x22d3ee : 0x0891b2;
+        const amberHex = isDark ? 0xfb923c : 0xd97706;
+
+        const ambient = new THREE.AmbientLight(isDark ? 0x93c5fd : 0xe0f2fe, isDark ? 0.65 : 1.15);
+        const keyLight = new THREE.DirectionalLight(primaryHex, isDark ? 2.2 : 2.6);
         keyLight.position.set(4, 3, 5);
-        const rimLight = new THREE.PointLight(0xfb923c, 3.2, 16);
+        const rimLight = new THREE.PointLight(amberHex, isDark ? 3.2 : 2.6, 16);
         rimLight.position.set(-3.5, -2.2, 3.2);
-        const topLight = new THREE.PointLight(0x22d3ee, 2.2, 14);
+        const topLight = new THREE.PointLight(secondaryHex, 2.2, 14);
         topLight.position.set(0, 4, 1);
         scene.add(ambient, keyLight, rimLight, topLight);
 
-        // 1. Inner crystalline obsidian core
+        // 1. Inner crystalline core
         const coreGeo = new THREE.IcosahedronGeometry(1.08, 1);
         const coreMat = new THREE.MeshPhysicalMaterial({
-          color: 0x0b172a,
-          emissive: 0x0a2540,
-          emissiveIntensity: 0.85,
-          metalness: 0.72,
+          color: isDark ? 0x0b172a : 0x0c4a6e,
+          emissive: isDark ? 0x0a2540 : 0x0369a1,
+          emissiveIntensity: isDark ? 0.85 : 0.45,
+          metalness: isDark ? 0.72 : 0.55,
           roughness: 0.22,
           flatShading: true,
           clearcoat: 0.9,
@@ -84,26 +91,26 @@ export function HeroScene() {
         const coreMesh = new THREE.Mesh(coreGeo, coreMat);
         root.add(coreMesh);
 
-        // 2. Luminous wireframe outer geodesic cage
+        // 2. Wireframe geodesic cage
         const cageGeo = new THREE.IcosahedronGeometry(1.32, 1);
         const cageEdges = new THREE.EdgesGeometry(cageGeo);
         const cageMat = new THREE.LineBasicMaterial({
-          color: 0x38bdf8,
+          color: primaryHex,
           transparent: true,
-          opacity: 0.45,
+          opacity: isDark ? 0.48 : 0.55,
         });
         const cageLines = new THREE.LineSegments(cageEdges, cageMat);
         root.add(cageLines);
 
-        // 3. 39 Autonomous Agent Tool Nodes on a Fibonacci Sphere + Neural Lattice
+        // 3. 39 Autonomous Agent Tool Nodes on Fibonacci Sphere
         const nodeCount = 39;
         const nodePositions: InstanceType<typeof THREE.Vector3>[] = [];
         const goldenAngle = Math.PI * (3 - Math.sqrt(5));
         const sphereRadius = 1.92;
 
-        const nodeGeo = new THREE.SphereGeometry(0.042, 10, 10);
-        const cyanNodeMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-        const amberNodeMat = new THREE.MeshBasicMaterial({ color: 0xfb923c });
+        const nodeGeo = new THREE.SphereGeometry(0.044, 10, 10);
+        const cyanNodeMat = new THREE.MeshBasicMaterial({ color: primaryHex });
+        const amberNodeMat = new THREE.MeshBasicMaterial({ color: amberHex });
         const nodesGroup = new THREE.Group();
 
         for (let i = 0; i < nodeCount; i++) {
@@ -128,11 +135,10 @@ export function HeroScene() {
         }
         root.add(nodesGroup);
 
-        // Connect neighboring agent nodes with subtle luminous edges
         const linkVerts: number[] = [];
         const linkColors: number[] = [];
-        const cCyan = new THREE.Color(0x38bdf8);
-        const cAmber = new THREE.Color(0xfb923c);
+        const cCyan = new THREE.Color(primaryHex);
+        const cAmber = new THREE.Color(amberHex);
         for (let i = 0; i < nodePositions.length; i++) {
           for (let j = i + 1; j < nodePositions.length; j++) {
             const dist = nodePositions[i].distanceTo(nodePositions[j]);
@@ -162,17 +168,17 @@ export function HeroScene() {
         const linksMat = new THREE.LineBasicMaterial({
           vertexColors: true,
           transparent: true,
-          opacity: 0.24,
+          opacity: isDark ? 0.26 : 0.34,
         });
         const linksMesh = new THREE.LineSegments(linksGeo, linksMat);
         nodesGroup.add(linksMesh);
 
-        // 4. Three tilted gyroscopic orbital rings + streaming data packets
+        // 4. Three tilted gyroscopic orbital rings + packets
         const ringsGroup = new THREE.Group();
         const ringConfigs = [
-          { radius: 2.28, tube: 0.008, color: 0x38bdf8, rx: 1.15, ry: 0.35, speed: 0.32 },
-          { radius: 2.52, tube: 0.007, color: 0x22d3ee, rx: -0.78, ry: 0.9, speed: -0.24 },
-          { radius: 2.74, tube: 0.006, color: 0xfb923c, rx: 0.42, ry: -1.1, speed: 0.19 },
+          { radius: 2.28, tube: 0.009, color: primaryHex, rx: 1.15, ry: 0.35, speed: 0.32 },
+          { radius: 2.52, tube: 0.008, color: secondaryHex, rx: -0.78, ry: 0.9, speed: -0.24 },
+          { radius: 2.74, tube: 0.007, color: amberHex, rx: 0.42, ry: -1.1, speed: 0.19 },
         ];
 
         const ringGeos: InstanceType<typeof THREE.BufferGeometry>[] = [];
@@ -183,7 +189,7 @@ export function HeroScene() {
           packets: { mesh: InstanceType<typeof THREE.Mesh>; radius: number; phase: number }[];
         }[] = [];
 
-        const packetGeo = new THREE.SphereGeometry(0.036, 8, 8);
+        const packetGeo = new THREE.SphereGeometry(0.038, 8, 8);
 
         for (const cfg of ringConfigs) {
           const holder = new THREE.Group();
@@ -193,7 +199,7 @@ export function HeroScene() {
           const torusMat = new THREE.MeshBasicMaterial({
             color: cfg.color,
             transparent: true,
-            opacity: 0.28,
+            opacity: isDark ? 0.3 : 0.38,
           });
           ringGeos.push(torusGeo);
           ringMats.push(torusMat);
@@ -220,12 +226,12 @@ export function HeroScene() {
         }
         root.add(ringsGroup);
 
-        // 5. Ambient deep-space telemetry dust particles
-        const starCount = isMobile ? 110 : 220;
+        // 5. Telemetry dust particles
+        const starCount = isMobile ? 100 : 190;
         const starPositions = new Float32Array(starCount * 3);
         const starColors = new Float32Array(starCount * 3);
         for (let i = 0; i < starCount; i++) {
-          const r = 2.9 + Math.random() * 2.6;
+          const r = 2.9 + Math.random() * 2.5;
           const theta = Math.random() * Math.PI * 2;
           const phi = Math.acos(2 * Math.random() - 1);
           starPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
@@ -244,13 +250,12 @@ export function HeroScene() {
           size: isMobile ? 0.032 : 0.036,
           vertexColors: true,
           transparent: true,
-          opacity: 0.65,
+          opacity: isDark ? 0.65 : 0.45,
           depthWrite: false,
         });
         const stars = new THREE.Points(starsGeo, starsMat);
         scene.add(stars);
 
-        // Interactive pointer parallax + drag-to-orbit
         let targetRotX = 0.14;
         let targetRotY = 0;
         let dragRotX = 0;
@@ -414,14 +419,13 @@ export function HeroScene() {
       io.disconnect();
       cleanup();
     };
-  }, [paused, reducedMotion]);
+  }, [paused, reducedMotion, isDark]);
 
   return (
-    <div className="preserve-dark relative flex flex-col overflow-hidden rounded-3xl border border-white/[0.1] bg-[#070d19]/95 shadow-[0_30px_90px_-30px_rgba(56,189,248,0.28)]">
-      {/* Subtle architectural radial backdrop */}
+    <div className="glass-panel relative flex flex-col overflow-hidden rounded-3xl">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_46%,rgba(56,189,248,0.16),transparent_62%),radial-gradient(circle_at_25%_75%,rgba(251,146,60,0.11),transparent_55%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_46%,rgba(56,189,248,0.14),transparent_62%),radial-gradient(circle_at_25%_75%,rgba(251,146,60,0.09),transparent_55%)]"
       />
       <div
         aria-hidden="true"
@@ -429,8 +433,8 @@ export function HeroScene() {
       />
 
       {/* Top HUD Bar */}
-      <div className="relative z-10 flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
-        <div className="flex items-center gap-2 font-mono text-[11px] text-slate-300">
+      <div className="relative z-10 flex items-center justify-between border-b border-white/[0.08] px-4 py-3">
+        <div className="flex items-center gap-2 font-mono text-xs text-slate-300">
           <span
             className={`h-2 w-2 rounded-full ${
               live ? "bg-emerald-400 shadow-[0_0_10px_#34d399]" : "bg-sky-400"
@@ -444,7 +448,7 @@ export function HeroScene() {
             type="button"
             onClick={() => setPaused((p) => !p)}
             aria-label={paused ? "Resume 3D animation" : "Pause 3D animation"}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.1] bg-slate-950/70 px-2.5 py-1 font-mono text-[11px] text-slate-300 transition hover:border-sky-400/45 hover:text-white"
+            className="btn-cool-ghost inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs font-medium"
           >
             {paused ? (
               <>
@@ -464,7 +468,7 @@ export function HeroScene() {
       {/* 3D Canvas Host + Graceful Static SVG Fallback */}
       <div
         ref={containerRef}
-        className="relative aspect-[4/3.6] w-full select-none sm:aspect-[4/3.4] lg:aspect-[1/0.96]"
+        className="relative aspect-[4/3.5] w-full select-none sm:aspect-[4/3.3] lg:aspect-[1/0.94]"
         aria-label="Interactive 3D neural systems visualization representing 39 AI agent tools and real-time distributed telemetry rings"
       >
         {!live && (
@@ -476,15 +480,15 @@ export function HeroScene() {
           >
             <defs>
               <linearGradient id="coreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.9" />
-                <stop offset="55%" stopColor="#22d3ee" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#fb923c" stopOpacity="0.85" />
+                <stop offset="0%" stopColor={isDark ? "#38bdf8" : "#0284c7"} stopOpacity="0.9" />
+                <stop offset="55%" stopColor={isDark ? "#22d3ee" : "#0891b2"} stopOpacity="0.65" />
+                <stop offset="100%" stopColor={isDark ? "#fb923c" : "#d97706"} stopOpacity="0.85" />
               </linearGradient>
             </defs>
             <g fill="none" stroke="url(#coreGrad)">
               <ellipse cx="210" cy="200" rx="158" ry="62" transform="rotate(-24 210 200)" strokeOpacity="0.45" strokeWidth="1.2" />
               <ellipse cx="210" cy="200" rx="145" ry="56" transform="rotate(32 210 200)" strokeOpacity="0.38" strokeWidth="1.2" />
-              <ellipse cx="210" cy="200" rx="170" ry="66" transform="rotate(78 210 200)" strokeOpacity="0.26" strokeWidth="1.1" />
+              <ellipse cx="210" cy="200" rx="170" ry="66" transform="rotate(78 210 200)" strokeOpacity="0.28" strokeWidth="1.1" />
               <polygon points="210,115 284,158 284,242 210,285 136,242 136,158" strokeWidth="1.6" fill="rgba(14, 116, 144, 0.14)" />
               <polygon points="210,145 258,172 258,228 210,255 162,228 162,172" strokeWidth="1.2" strokeOpacity="0.7" />
               <line x1="210" y1="115" x2="210" y2="285" strokeOpacity="0.35" />
@@ -500,7 +504,11 @@ export function HeroScene() {
                 cx={cx}
                 cy={cy}
                 r={idx % 3 === 0 ? 4.5 : 3.2}
-                fill={idx % 3 === 0 ? "#fb923c" : "#38bdf8"}
+                fill={
+                  idx % 3 === 0
+                    ? isDark ? "#fb923c" : "#d97706"
+                    : isDark ? "#38bdf8" : "#0284c7"
+                }
               />
             ))}
           </svg>
@@ -508,12 +516,12 @@ export function HeroScene() {
       </div>
 
       {/* Bottom Telemetry Strip */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.07] bg-slate-950/70 px-4 py-3 font-mono text-[11px] text-slate-400">
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.08] px-4 py-3 font-mono text-xs text-slate-400">
         <span className="inline-flex items-center gap-1.5 text-slate-300">
           <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-          39 Tool Nodes · Hybrid RAG · Multi-LLM Failover
+          39 Tool Nodes · Hybrid RAG · Multi-LLM
         </span>
-        <span className="text-sky-300/90">Drag or hover to orbit</span>
+        <span className="text-sky-400">Drag or hover to orbit</span>
       </div>
     </div>
   );

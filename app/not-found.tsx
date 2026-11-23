@@ -7,7 +7,7 @@ export default function NotFound() {
       id="main"
       className="mx-auto flex min-h-[75vh] max-w-2xl flex-col items-center justify-center px-4 text-center"
     >
-      <span className="rounded-full border border-sky-400/30 bg-sky-400/10 px-3.5 py-1 font-mono text-xs text-sky-300">
+      <span className="chip-accent rounded-full px-3.5 py-1 font-mono text-xs font-semibold">
         404 // ROUTE NOT FOUND
       </span>
       <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
@@ -19,7 +19,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="btn-cool-primary preserve-dark mt-8 inline-flex min-h-[44px] items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold"
+        className="btn-cool-primary mt-8 inline-flex min-h-[44px] items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold"
       >
         <ArrowLeft className="h-4 w-4" />
         Return to Portfolio
