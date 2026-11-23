@@ -210,13 +210,13 @@ export default async function HomePage() {
 
             <Reveal delay={0.2} direction="up">
               <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Link
+                <a
                   href="#skills"
                   className="btn-cool-primary inline-flex min-h-[46px] items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
                 >
                   Explore Skills
                   <ArrowRight className="h-4 w-4" />
-                </Link>
+                </a>
 
                 <Link
                   href="/resume"

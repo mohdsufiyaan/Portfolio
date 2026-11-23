@@ -154,6 +154,7 @@ export function Navbar() {
               <Link
                 key={item.id}
                 href={item.href}
+                data-nav-scroll="true"
                 onClick={(e) => handleNavClick(e, item.id)}
                 aria-current={isActive ? "page" : undefined}
                 className={`rounded-xl px-3 py-1.5 text-sm font-medium ${
@@ -180,6 +181,7 @@ export function Navbar() {
           </Link>
           <Link
             href="/#contact"
+            data-nav-scroll="true"
             onClick={(e) => handleNavClick(e, "contact")}
             className="btn-cool-primary inline-flex min-h-[38px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold"
           >
@@ -225,6 +227,7 @@ export function Navbar() {
                   <Link
                     key={item.id}
                     href={item.href}
+                    data-nav-scroll="true"
                     onClick={(e) => handleNavClick(e, item.id)}
                     aria-current={isActive ? "page" : undefined}
                     className={`rounded-xl px-3.5 py-2.5 text-sm font-semibold ${
@@ -249,6 +252,7 @@ export function Navbar() {
               </Link>
               <Link
                 href="/#contact"
+                data-nav-scroll="true"
                 onClick={(e) => handleNavClick(e, "contact")}
                 className="btn-cool-primary inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold"
               >

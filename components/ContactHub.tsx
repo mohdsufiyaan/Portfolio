@@ -20,12 +20,35 @@ export function ContactHub() {
   const [copiedField, setCopiedField] = useState<"email" | "phone" | null>(null);
 
   const copyValue = async (text: string, field: "email" | "phone") => {
+    let copied = false;
     try {
-      await navigator.clipboard.writeText(text);
-      setCopiedField(field);
-      setTimeout(() => setCopiedField((prev) => (prev === field ? null : prev)), 2200);
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+      }
     } catch {
-      /* Fallback handled by direct mailto/tel links */
+      copied = false;
+    }
+    if (!copied) {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        copied = document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch {
+        copied = false;
+      }
+    }
+    if (copied) {
+      setCopiedField(field);
+      setTimeout(
+        () => setCopiedField((prev) => (prev === field ? null : prev)),
+        2200,
+      );
     }
   };
 
