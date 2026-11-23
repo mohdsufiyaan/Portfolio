@@ -106,7 +106,7 @@ const HIGHLIGHTED_SIGNATURE_SKILLS: {
   {
     name: "PostgreSQL & MySQL 8",
     role: "Prisma 7 (46 Models) · 15-Model Settlement",
-    metric: "Composite Indexes · lockForUpdate",
+    metric: "Composite Indexes · Row Locking",
     domain: "databases",
     accent: "cyan",
   },

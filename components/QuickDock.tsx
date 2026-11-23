@@ -93,9 +93,9 @@ export function QuickDock() {
 
   const commands = useMemo<CommandItem[]>(() => {
     const sections: CommandItem[] = [
-      { id: "s-skills", label: "Highlighted Skills & D3 Physics Graph", group: "Sections", hint: "#skills", run: () => jumpToSection("skills") },
+      { id: "s-skills", label: "Highlighted Skills & Capability Network", group: "Sections", hint: "#skills", run: () => jumpToSection("skills") },
       { id: "s-about", label: "About & Engineering Philosophy", group: "Sections", hint: "#about", run: () => jumpToSection("about") },
-      { id: "s-studio", label: "Flagship D3.js Architecture Studio", group: "Sections", hint: "#flagship-studio", run: () => jumpToSection("flagship-studio") },
+      { id: "s-studio", label: "Flagship System Architecture Studio", group: "Sections", hint: "#flagship-studio", run: () => jumpToSection("flagship-studio") },
       { id: "s-projects", label: "Featured Projects & Case Studies", group: "Sections", hint: "#projects", run: () => jumpToSection("projects") },
       { id: "s-exp", label: "Professional Experience Timeline", group: "Sections", hint: "#experience", run: () => jumpToSection("experience") },
       { id: "s-github", label: "Live GitHub Contribution Matrix", group: "Sections", hint: "#github", run: () => jumpToSection("github") },
@@ -261,24 +261,56 @@ export function QuickDock() {
               onClick={(e) => e.stopPropagation()}
               className="glass-panel w-full max-w-xl overflow-hidden rounded-3xl shadow-2xl"
             >
-              <div className="flex items-center gap-3 border-b border-white/[0.1] px-4 py-3.5">
-                <Search className="h-4 w-4 shrink-0 text-sky-400" />
-                <input
-                  type="text"
-                  autoFocus
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Jump to skills, resume preview, D3 blueprints, or projects..."
-                  className="w-full bg-transparent text-sm text-white placeholder:text-slate-400 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  aria-label="Close command palette"
-                  className="btn-cool-secondary inline-flex h-8 w-8 items-center justify-center rounded-lg"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+              <div className="border-b border-white/[0.1] p-3.5">
+                <div className="flex items-center gap-2.5">
+                  <label
+                    htmlFor="command-palette-search"
+                    className={`search-field-shell h-11 flex-1 rounded-2xl pl-2 pr-3 ${
+                      query.trim() ? "search-field-active" : ""
+                    }`}
+                  >
+                    <span className="search-field-icon h-7 w-7 shrink-0">
+                      <Search className="h-4 w-4" />
+                    </span>
+                    <input
+                      id="command-palette-search"
+                      name="commandSearch"
+                      type="text"
+                      autoFocus
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Jump to skills, resume studio, system blueprints, or projects..."
+                      className="search-field-input w-full text-sm font-medium"
+                    />
+                    {query.trim() && (
+                      <span
+                        className={`shrink-0 rounded-md px-2 py-0.5 font-mono text-[11px] font-bold ${
+                          filtered.length > 0 ? "chip-emerald" : "chip-amber"
+                        }`}
+                      >
+                        {filtered.length}
+                      </span>
+                    )}
+                    {query && (
+                      <button
+                        type="button"
+                        onClick={() => setQuery("")}
+                        aria-label="Clear quick jump search"
+                        className="search-field-clear h-6 w-6 shrink-0"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    aria-label="Close command palette"
+                    className="btn-cool-secondary inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
 
               <div data-lenis-prevent className="max-h-[55vh] overflow-y-auto p-3">

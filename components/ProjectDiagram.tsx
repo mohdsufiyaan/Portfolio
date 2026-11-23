@@ -180,7 +180,7 @@ export function ProjectDiagram({ type, compact = false }: ProjectDiagramProps) {
             <text x="475" y="122" textAnchor="middle" fill={inkSub} fontSize="9.5" fontFamily="monospace">Instant Vendor Dispatch</text>
 
             <rect x="406" y="144" width="138" height="52" rx="11" fill={nodeFillAmber} stroke={amber} strokeOpacity="0.5" />
-            <text x="475" y="166" textAnchor="middle" fill={amberLabel} fontSize="11" fontWeight="600">CrashGuard &amp; Gate</text>
+            <text x="475" y="166" textAnchor="middle" fill={amberLabel} fontSize="11" fontWeight="600">Crash Recovery &amp; Gate</text>
             <text x="475" y="182" textAnchor="middle" fill={inkSub} fontSize="9.5" fontFamily="monospace">Error Boundary · Updates</text>
           </svg>
         </div>

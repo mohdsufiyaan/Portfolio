@@ -290,7 +290,7 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
               ref={heatmapRef}
               className="block h-auto min-w-[600px] w-full"
               role="img"
-              aria-label={`D3.js 52-week GitHub contribution square calendar showing ${data.summaryText}`}
+              aria-label={`52-week GitHub contribution calendar showing ${data.summaryText}`}
             />
           </div>
 
@@ -331,7 +331,7 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
         >
           <div>
             <div className="font-mono text-xs font-semibold uppercase tracking-wider text-sky-400">
-              D3.js Production Footprint
+              Production Engineering Footprint
             </div>
             <h3 className="mt-1 text-lg font-semibold text-white">
               Engineering Focus Split
@@ -343,7 +343,7 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
               ref={donutRef}
               className="h-[200px] w-[200px]"
               role="img"
-              aria-label="D3.js donut chart illustrating core production engineering focus areas"
+              aria-label="Interactive chart illustrating core production engineering focus areas"
             />
             {activeSlice && (
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4 text-center">

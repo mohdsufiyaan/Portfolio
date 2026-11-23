@@ -296,7 +296,7 @@ export default async function HomePage() {
           <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div className="max-w-2xl">
               <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
-                01 // Highlighted Skills &amp; D3.js Physics Network
+                01 // Highlighted Skills &amp; Interactive Capability Map
               </p>
               <h2
                 id="skills-heading"
@@ -309,8 +309,8 @@ export default async function HomePage() {
               </h2>
             </div>
             <p className="max-w-[42ch] text-sm leading-relaxed text-slate-400 sm:text-[15px]">
-              Click any highlighted specialty card, drag floating physics nodes
-              in the D3.js network, or filter by engineering domain.
+              Click any highlighted specialty card, drag interactive nodes in
+              the capability network, or filter by engineering domain.
             </p>
           </div>
         </Reveal>
@@ -513,7 +513,7 @@ export default async function HomePage() {
           <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div className="max-w-2xl">
               <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
-                03 // Interactive 4-Layer D3.js System Blueprints
+                03 // Interactive 4-Layer System Blueprints
               </p>
               <h2
                 id="studio-heading"
@@ -526,12 +526,13 @@ export default async function HomePage() {
               </h2>
             </div>
             <p className="max-w-[44ch] text-sm leading-relaxed text-slate-400 sm:text-[15px]">
-              Switch across 3 flagship platforms and 4 D3.js architectural views
-              (<strong className="text-slate-200">High-Level Flow</strong>,{" "}
+              Switch across 3 flagship platforms and 4 interactive architectural
+              views (
+              <strong className="text-slate-200">High-Level Flow</strong>,{" "}
               <strong className="text-slate-200">Auth &amp; Security</strong>,{" "}
               <strong className="text-slate-200">DB &amp; Caching</strong>,{" "}
               <strong className="text-slate-200">Real-Time &amp; Failover</strong>
-              ). Click any node to inspect its codebase implementation.
+              ). Click any node to inspect how each subsystem works in production.
             </p>
           </div>
         </Reveal>

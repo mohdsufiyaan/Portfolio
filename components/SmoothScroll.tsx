@@ -8,29 +8,38 @@ let activeLenis: Lenis | null = null;
 export function smoothScrollTo(target: number | string | HTMLElement, offset = -84) {
   if (typeof window === "undefined") return;
 
-  if (activeLenis) {
-    if (typeof target === "number") {
-      activeLenis.scrollTo(target, { duration: 1.05 });
+  if (typeof target === "number") {
+    const top = Math.max(0, target);
+    if (activeLenis) {
+      activeLenis.scrollTo(top, { duration: 1.05, force: true });
     } else {
-      activeLenis.scrollTo(target, { offset, duration: 1.1 });
+      window.scrollTo({ top, behavior: "smooth" });
     }
     return;
   }
 
-  if (typeof target === "number") {
-    window.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
+  let el: HTMLElement | null = null;
+  if (typeof target === "string") {
+    const trimmed = target.trim();
+    const id = trimmed.replace(/^#/, "");
+    el = document.getElementById(id);
+    if (!el && (trimmed.startsWith("#") || trimmed.startsWith(".") || trimmed.startsWith("["))) {
+      const found = document.querySelector(trimmed);
+      if (found instanceof HTMLElement) el = found;
+    }
+  } else if (target instanceof HTMLElement) {
+    el = target;
+  }
+
+  if (!el) return;
+
+  if (activeLenis) {
+    activeLenis.scrollTo(el, { offset, duration: 1.15, force: true });
     return;
   }
 
-  const el =
-    typeof target === "string"
-      ? document.getElementById(target.replace(/^#/, "")) ?? document.querySelector(target)
-      : target;
-
-  if (el instanceof HTMLElement) {
-    const top = el.getBoundingClientRect().top + window.scrollY + offset;
-    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-  }
+  const top = el.getBoundingClientRect().top + window.scrollY + offset;
+  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
 }
 
 export function setSmoothScrollLocked(locked: boolean) {

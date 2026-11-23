@@ -508,10 +508,10 @@ export function ResumeViewer() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-sm font-semibold text-white sm:text-base">
-                Mohd_Sufiyan_Resume.pdf
+                {profile.name} — Curriculum Vitae
               </h2>
               <span className="chip-emerald rounded-full px-2.5 py-0.5 font-mono text-[11px] font-medium">
-                PDF.js HiDPI Engine
+                High-Resolution Viewer
               </span>
               {wordCount > 0 && (
                 <span className="chip-neutral hidden rounded-full px-2.5 py-0.5 font-mono text-[11px] sm:inline-flex">
@@ -763,32 +763,45 @@ export function ResumeViewer() {
 
         {/* Right: In-PDF Instant Keyword Search */}
         {!fallbackMode && (
-          <div className="surface-subcard flex h-8 items-center gap-1.5 rounded-lg px-2.5">
-            <Search className="h-3.5 w-3.5 shrink-0 text-sky-400" />
+          <label
+            htmlFor="resume-pdf-search"
+            className={`search-field-shell h-9 rounded-xl pl-1.5 pr-2.5 ${
+              searchQuery.trim() ? "search-field-active" : ""
+            }`}
+          >
+            <span className="search-field-icon h-6 w-6 shrink-0">
+              <Search className="h-3.5 w-3.5" />
+            </span>
             <input
+              id="resume-pdf-search"
+              name="resumeSearch"
               ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search resume (Ctrl+F)..."
-              className="w-36 bg-transparent text-xs text-white placeholder:text-slate-400 focus:outline-none sm:w-48"
+              className="search-field-input w-40 text-xs font-medium sm:w-52"
             />
-            {searchQuery && (
-              <>
-                <span className="font-mono text-xs font-semibold text-sky-400">
-                  {totalMatches}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  aria-label="Clear search"
-                  className="text-slate-400 hover:text-white"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </>
+            {searchQuery.trim() && (
+              <span
+                className={`shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold ${
+                  totalMatches > 0 ? "chip-emerald" : "chip-amber"
+                }`}
+              >
+                {totalMatches}
+              </span>
             )}
-          </div>
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search"
+                className="search-field-clear h-5 w-5 shrink-0"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </label>
         )}
       </div>
 

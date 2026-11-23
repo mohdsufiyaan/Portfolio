@@ -276,12 +276,15 @@ export default function RootLayout({
                     </div>
                   </div>
 
-                  <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-white/[0.08] pt-6 font-mono text-xs text-slate-500 sm:flex-row sm:items-center">
+                  <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-white/[0.08] pt-6 font-mono text-xs text-slate-400 sm:flex-row sm:items-center">
                     <span>
-                      © {new Date().getFullYear()} {profile.name}. Engineered
-                      with Next.js, TypeScript &amp; Three.js.
+                      © {new Date().getFullYear()} {profile.name}. All rights
+                      reserved.
                     </span>
-                    <span>&ldquo;{profile.quote}&rdquo;</span>
+                    <span>
+                      {profile.role} · Scalable Full-Stack &amp; Applied AI
+                      Systems
+                    </span>
                   </div>
                 </div>
             </footer>

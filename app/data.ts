@@ -226,7 +226,7 @@ export const skillGroups: SkillGroup[] = [
       { name: "Horizontal Scaling", context: "Redis adapter & stateless APIs" },
       { name: "Caching (Redis & LRU)", context: "Multi-tier low-latency reads" },
       { name: "Message Queues & Rate Limiting", context: "Backpressure & traffic shaping" },
-      { name: "Concurrency Control", context: "lockForUpdate & optimistic locking" },
+      { name: "Concurrency Control", context: "Row locking & optimistic versioning" },
       { name: "RBAC + Zero Trust (ZTD)", context: "3-layer query, route & AI scoping" },
       { name: "Circuit Breakers & Failover", context: "429/402 automatic recovery" },
       { name: "Observability", context: "Pino structured logs & Prometheus" },
@@ -386,14 +386,14 @@ export const projects: Project[] = [
     challenge:
       "Enterprise teams needed an AI operations assistant that could execute complex multi-step workflows (task delegation, stopwatch tracking, calendar/mail drafts, and EOD reporting) without hallucinating tool outputs, leaking cross-department data, blowing up token budgets, or failing whenever an LLM provider returned 429/402 errors.",
     solution:
-      "Built a bounded 6-step autonomous agent on Laravel AI SDK with a custom Agentic Harness (`AgentOrchestrator`, `SemanticIntentRouter`, `ModeGovernance`, `ToolSelector`, `TokenBudgetManager`), 39 tools and 19 skills, Hybrid RAG (`PineconeVectorService` 1024-dim Jina + MySQL FTS via Reciprocal Rank Fusion), `MultiProviderLLMGateway` (Groq → Gemini → OpenRouter), `GroundednessService`, and 3-layer Zero-Trust RBAC (`AccessScope`, `DepartmentBoundaryGuard`).",
+      "Built a bounded 6-step autonomous agent on the Laravel AI SDK with a custom orchestration harness covering intent routing, mode governance, dynamic tool selection, and token budgeting—driving 39 tools and 19 domain skills, Hybrid RAG (1024-dim Pinecone vector search + MySQL Full-Text via Reciprocal Rank Fusion), a multi-provider failover gateway (Groq → Gemini → OpenRouter), automated response grounding, and 3-layer Zero-Trust RBAC with department boundary enforcement.",
     impact:
-      "Reduced production LLM token costs by 30–50% via `ToolResultCompressor` & `ConversationSummariser`, eliminated concurrent write race conditions using `lockForUpdate` & optimistic `version` columns, enabled 24-hour undoable AES-256 OAuth 2.0 MS365/Workspace drafts (`PendingAction`), and verified reliability across 89 PHPUnit 11 & Pest test suites.",
+      "Reduced production LLM token costs by 30–50% via structured tool-result compression and rolling conversation summarization, eliminated concurrent write race conditions using pessimistic row locks and optimistic row versioning, enabled 24-hour undoable AES-256 OAuth 2.0 MS365/Workspace drafts, and verified reliability across 89 PHPUnit 11 & Pest test suites.",
     deliveryStages: [
       { stage: "Agentic Harness", detail: "39 tools, 19 skills, 6-step reasoning loop" },
-      { stage: "Hybrid RAG & Memory", detail: "Pinecone 1024d + MySQL FTS RRF + MailMemory" },
+      { stage: "Hybrid RAG & Memory", detail: "Pinecone 1024d + MySQL FTS RRF + Mail Memory" },
       { stage: "ZTD & Multi-LLM", detail: "429/402 circuit breaker + 3-layer RBAC" },
-      { stage: "6 Queues & 89 Tests", detail: "Heartbeat task slicer + 89 PHPUnit/Pest suites" },
+      { stage: "6 Queues & 89 Tests", detail: "Heartbeat task slicing + 89 PHPUnit/Pest suites" },
     ],
     impactMetrics: [
       { value: "39 / 19", label: "Agent Tools & Domain Skills" },
@@ -420,16 +420,16 @@ export const projects: Project[] = [
     architectureHighlight:
       "Hybrid retrieval fuses Pinecone 1024-dim Jina vector search with MySQL Full-Text Search via Reciprocal Rank Fusion (RRF), guarded by lexical/cosine tool-output verification and automatic 429/402 circuit-breaker LLM failover.",
     contributions: [
-      "Architected a custom Agentic Harness (`AgentOrchestrator`, `RequestPreprocessor`, `IntentClassifier`, `SemanticIntentRouter`, `ModeGovernance`, `ToolSelector`, `TokenBudgetManager`) on Laravel 12 & Laravel AI SDK driving 39 tools and 19 domain skills across 28 Eloquent models and 22 controllers.",
-      "Engineered a Hybrid RAG pipeline (`PineconeVectorService`, `AgentRagService`, `AppManualService`) combining Pinecone Serverless 1024-dim Jina embeddings with MySQL 8 Full-Text Search merged via Reciprocal Rank Fusion (RRF).",
-      "Implemented `MultiProviderLLMGateway` and `ModelRouter` across Groq, Google Gemini, and OpenRouter with `SharedQuotaService`, `ExternalBurstLimiter`, and circuit breakers (`LlmCooldownResumeHandler`, `DegradedModeService`) that automatically fail over on HTTP 429/402 errors.",
-      "Hardened response grounding and safety via `GroundednessService`, `AgentVerificationGuard`, `AgentReplyGuard`, `PromptInjectionPatterns`, and `TechnologyDisclosureGuard`.",
-      "Cut LLM token expenditure by 30–50% using `ToolResultCompressor`, `ContextOptimizationService`, `ConversationMemoryManager`, and `ConversationSummariser`.",
-      "Enforced 3-layer Zero-Trust Defense (ZTD) using `AccessScope`, `DepartmentBoundaryGuard`, `AgentSecurityPolicy`, controller 403 checks, and `CapabilityPreflightValidator`.",
-      "Optimized MySQL 8 concurrency and throughput using composite usage indexes, eager loading, `lockForUpdate` row locks, optimistic `version` columns, and background task slicing (`TaskSlicer`, `ExecuteBackgroundTaskSliceJob` with heartbeat tracking) across 6 priority queue lanes.",
-      "Built a full two-way Slack AI Bot (`SlackAuthController`, `SlackWebhookController`, `SlackWebhookVerifier`, `SlackCommands`, `SlackBlockKit`, `SlackAiChatTaskHandler`, `SlackVoiceTranscriptionService`, `SlackListenCommand`) allowing teams to delegate tasks via Slack chat and voice notes.",
-      "Engineered a 4-channel notification dispatcher (`NotificationDispatcher`, `WhatsAppNotificationService`, `SendFcmNotificationJob`, `SendWhatsAppNotificationJob`, `SlackNotificationBridge`) plus 17 unified MS365 & Google Workspace mail/calendar tools (`UnifiedMailService`, `CalendarFindFreeTimeTool`, `MailUndoManager`) with AES-256 tokens and 24-hour undoable `PendingAction` drafts.",
-      "Hardened production auth & observability with OTP 2FA (`SendAuthOtpJob`, `AuthOtpMail`), PII-scrubbed structured logs (`AiAgentLogger`, `LogRedactor`, `AuditLogService`, `AnalyzeAiLogs`), `PerformanceEngineService` (0–100 scorecards), `AiMetricsCollector`, `TracingService`, and 89 PHPUnit 11 & Pest test suites.",
+      "Architected a custom Agentic Harness covering request preprocessing, semantic intent routing, mode governance, dynamic tool selection, and token budget management on Laravel 12 & Laravel AI SDK—driving 39 tools and 19 domain skills across 28 domain models and 22 API controllers.",
+      "Engineered a Hybrid RAG pipeline combining Pinecone Serverless 1024-dim Jina embeddings with MySQL 8 Full-Text Search merged via Reciprocal Rank Fusion (RRF) across operational manuals and task knowledge bases.",
+      "Implemented a multi-provider LLM routing gateway across Groq, Google Gemini, and OpenRouter with shared quota governance, burst rate limiting, and automatic circuit breakers that fail over cleanly on HTTP 429/402 errors.",
+      "Hardened response grounding and safety with lexical/cosine output verification, reply safety guards, prompt-injection defense patterns, and technology-disclosure filtering.",
+      "Cut production LLM token expenditure by 30–50% through structured tool-result compression, context-window optimization, and rolling conversation memory summarization.",
+      "Enforced 3-layer Zero-Trust Defense (ZTD) across database query scoping, department boundary isolation, HTTP 403 policy guards, and pre-flight AI tool capability validation.",
+      "Optimized MySQL 8 concurrency and throughput using composite usage indexes, eager loading, pessimistic row-level locking, optimistic version columns, and resumable background task slicing with heartbeat tracking across 6 priority queue lanes.",
+      "Built a full two-way Slack AI Bot with cryptographic webhook verification, slash commands, interactive Block Kit cards, and voice-note transcription so teams can delegate tasks directly from Slack.",
+      "Engineered a 4-channel notification dispatcher (In-App, Firebase FCM, WhatsApp, and Slack) plus 17 unified Microsoft 365 & Google Workspace mail/calendar tools backed by AES-256 encrypted OAuth 2.0 tokens and 24-hour undoable action drafts.",
+      "Hardened production authentication and observability with OTP two-factor login, PII-redacted structured logging, immutable audit trails, automated 0–100 End-of-Day performance scorecards, distributed tracing, and 89 PHPUnit 11 & Pest test suites.",
     ],
     diagramType: "ai-ops",
   },
@@ -449,9 +449,9 @@ export const projects: Project[] = [
     challenge:
       "Bookings, dynamic time slots, partner payout settlements, and live dispatch alerts had to stay synchronized across web, admin, and mobile clients under multi-node horizontal scaling—while guaranteeing financial ledger auditability and zero blocking on emails, pushes, or media uploads.",
     solution:
-      "Engineered a 3-app monorepo backed by PostgreSQL & Prisma 7 (46 models across 15 domain schemas including a 15-model double-entry Settlement Ledger & Outbox), Socket.IO with Redis Adapter/Emitter for multi-instance sync, 6 specialized BullMQ workers (`mail`, `notification`, `reminder`, `reminderSweeper`, `slotWarmer`, `cleanup`), AWS S3 presigned URLs, Argon2/JWT/Zod 4/Redis rate limiting, and MFA + Step-Up admin auth.",
+      "Engineered a 3-app monorepo backed by PostgreSQL & Prisma 7 (46 models across 13 modular domains including a 15-model double-entry Settlement Ledger & transactional outbox), Socket.IO with Redis Adapter/Emitter for multi-instance sync, 6 specialized BullMQ worker queues (mail, push notifications, reminders, sweeps, slot cache warming, and cleanup), AWS S3 presigned uploads, Argon2/JWT/Zod 4/Redis rate limiting, and MFA + Step-Up admin authentication.",
     impact:
-      "Delivered sub-second API performance with two-tier Redis + LRU caching, fully auditable partner settlement batches/holds/discrepancies, seamless Razorpay & Firebase FCM workflows, Pino + Prometheus observability, and 56 automated Vitest + Supertest test suites.",
+      "Delivered sub-second API performance with two-tier Redis + LRU caching, fully auditable partner settlement batches, holds, and discrepancy reconciliation, seamless Razorpay & Firebase FCM workflows, Pino + Prometheus observability, and 56 automated Vitest + Supertest test suites.",
     deliveryStages: [
       { stage: "3-App Ecosystem", detail: "Express 5 API + 2 Next.js 16 portals" },
       { stage: "Settlement Core", detail: "46 Prisma models · 15-model finance ledger" },
@@ -486,12 +486,12 @@ export const projects: Project[] = [
     architectureHighlight:
       "Stateless Express 5 nodes stay synchronized over Socket.IO + Redis Adapter while offloading async work to 6 dedicated BullMQ workers and enforcing double-entry partner payout reconciliation across 15 PostgreSQL settlement models.",
     contributions: [
-      "Architected a 3-application monorepo comprising the Express 5.2 REST/WebSocket API, a Next.js 16 Customer & Service-Partner Web Portal, and a hardened Next.js 16 Admin Control Plane with MFA (`/mfa`) and Step-Up authentication (`stepUpMiddleware.js`).",
-      "Modeled 46 PostgreSQL tables across 13 modular Prisma 7 schema files—including a 15-model double-entry Financial Settlement Engine (`accrualService`, `batchService`, `payoutStateMachine`, `reconciliationService`, `holdService`, `breaker.js` RazorpayX circuit breaker, and `slipPdf.js` PDF settlement slips) plus an 8-model SLA Support system.",
-      "Prevented concurrent double-booking and lost events using distributed Redis mutex locks (`redisLocks.js`), `bookingStateMachine.js`, `idempotencyMiddleware.js`, Redis keyspace TTL expiry listeners (`slotKeyspaceListener.js`), transactional outboxes (`slotOutbox.js`, `SettlementOutbox`, `SupportOutboxEvent`), and order completion OTP handshakes (`orderOtpService.js`).",
-      "Engineered a multi-tier read cache pairing L1 In-Memory LRU (`l1CacheMiddleware.js`) and L2 Redis with deterministic HTTP 304 ETag revalidation and automatic mutation invalidation (`etagService.js`, `etagInvalidation.js`).",
-      "Synchronized real-time booking updates, slot states, and presence across stateless PM2 instances using Socket.IO 4.8 (`@socket.io/redis-adapter`, `@socket.io/redis-emitter`, `slotSockets.js`) while offloading async jobs to 6 BullMQ workers (`mailWorker`, `notificationWorker`, `reminderWorker`, `reminderSweeper`, `slotWarmerWorker`, `cleanupWorker`) plus `settlementWorkers.js`.",
-      "Secured auth & admin operations with Argon2 password hashing, stateful sessions (`verifyAdminStatefulSession.js`), dual-channel OTP BullMQ workers (`otpEmailWorker.js`, `otpPhoneSmsWorker.js`), MFA + Step-Up auth (`stepUpMiddleware.js`), automatic audit interception (`adminAuditInterceptor.js` across 4 immutable audit log tables), Cloudflare Turnstile, Helmet, Zod 4, Redis `rate-limiter-flexible`, Pino rolling logs (`utils/logger.js`, `settlementLogger.js`), authenticated Prometheus metrics, live SLA support sweeps (`supportSlaSweeper.js`, `supportTap.js`), async payment webhook worker (`webhookWorker.js`), and 56 Vitest + Supertest test suites.",
+      "Architected a 3-application monorepo comprising the Express 5.2 REST/WebSocket API, a Next.js 16 Customer & Service-Partner Web Portal, and a hardened Next.js 16 Admin Control Plane with multi-factor and step-up re-authentication.",
+      "Modeled 46 PostgreSQL tables across 13 modular Prisma 7 domain schemas—including a 15-model double-entry Financial Settlement Engine covering earnings accruals, payout batches, payout state transitions, bank reconciliation, hold controls, a RazorpayX payout circuit breaker, and automated PDF settlement slips—plus an 8-model SLA support system.",
+      "Prevented concurrent double-booking and lost events using distributed Redis mutex locks, deterministic booking state transitions, idempotency guards, Redis keyspace TTL expiry listeners, transactional outboxes across slots/settlements/support, and rotating service-completion OTP handshakes.",
+      "Engineered a multi-tier read cache pairing L1 In-Memory LRU caching and L2 Redis with deterministic HTTP 304 ETag revalidation and automatic mutation-triggered cache invalidation.",
+      "Synchronized real-time booking updates, slot states, and live presence across stateless PM2 instances using Socket.IO 4.8 with Redis Adapter and Emitter while offloading async work to 6 core BullMQ worker queues plus dedicated settlement processors.",
+      "Secured authentication and admin operations with Argon2 password hashing, stateful admin sessions, dual-channel Email/SMS OTP queues, MFA + Step-Up verification, automatic audit interception across 4 immutable audit log tables, Cloudflare Turnstile, Helmet, Zod 4 validation, Redis rate limiting, rolling Pino structured logs, authenticated Prometheus metrics, live SLA support sweeps, async payment webhook processing, and 56 Vitest + Supertest test suites.",
     ],
     diagramType: "realtime",
   },
@@ -511,14 +511,14 @@ export const projects: Project[] = [
     challenge:
       "Mobile users on fluctuating cellular networks experienced stale booking screens, dropped WebSocket events, and wasted bandwidth on repeated polling—while service partners needed instantaneous, unmistakable dispatch alerts when new paid bookings arrived.",
     solution:
-      "Structured a clean feature-sliced React Native 0.87 (New Architecture + TypeScript 6) codebase with a custom `infrastructure/` layer: `etagClient` + `queryCacheEngine` for 304 conditional caching, `socketManager` + `connectivityMonitor` + `globalResyncCoordinator` for automatic reconnect reconciliation, live partner dispatch alerts + Firebase FCM, `crashGuard`, and `AppUpdateGate`.",
+      "Structured a clean feature-sliced React Native 0.87 (New Architecture + TypeScript 6) codebase with a dedicated mobile infrastructure layer: conditional HTTP 304 ETag query caching, automatic WebSocket reconnection with network-state monitoring and global delta resynchronization, live partner dispatch alerts paired with Firebase FCM, resilient crash recovery boundaries, and minimum-version update gating.",
     impact:
-      "Delivered fluid 60fps mobile interactions via NativeWind 4 and Reanimated 4 Worklets, dramatically reduced redundant API payloads via ETag caching, unified Customer and Partner workflows via instant RoleToggle, and ensured rock-solid session & crash safety.",
+      "Delivered fluid 60fps mobile interactions via NativeWind 4 and Reanimated 4 Worklets, dramatically reduced redundant API payloads via ETag caching, unified Customer and Partner workflows via instant role switching, and ensured rock-solid session and crash safety.",
     deliveryStages: [
       { stage: "20+ Feature Modules", detail: "Customer booking & Partner hub in one binary" },
       { stage: "ETag Cache Engine", detail: "HTTP 304 conditional caching + Zustand 5" },
       { stage: "Realtime & Dispatch", detail: "Socket resync, FCM push & live partner alerts" },
-      { stage: "Native Hardening", detail: "Razorpay SDK, CrashGuard & AppUpdateGate" },
+      { stage: "Native Hardening", detail: "Razorpay SDK, Crash Recovery & Update Gate" },
     ],
     impactMetrics: [
       { value: "RN 0.87", label: "New Architecture + TS 6" },
@@ -541,14 +541,14 @@ export const projects: Project[] = [
       "Geolocation & Media Picker",
     ],
     architectureHighlight:
-      "Custom mobile infrastructure layer combining HTTP ETag conditional caching (`etagClient` + `queryCacheEngine`) with a `globalResyncCoordinator` that reconciles Socket.IO state automatically across offline/online transitions.",
+      "Custom mobile infrastructure layer combining HTTP 304 ETag conditional caching with an automated global resync coordinator that reconciles Socket.IO state seamlessly across offline and online transitions.",
     contributions: [
       "Built a dual-role React Native 0.87 (New Architecture) mobile application covering 20+ modular feature domains including Home, Search, Outlet Discovery, Slot Booking, Orders, Favorites, Partner Hub, Payouts, Live Dispatch Alerts, Support, and Inquiries.",
-      "Engineered a custom `etagClient` and `queryCacheEngine` backed by AsyncStorage to serve cached views instantly and revalidate via HTTP 304 ETags.",
-      "Implemented `socketManager`, `connectivityMonitor`, `sessionInvalidator`, and `globalResyncCoordinator` to recover gracefully from network drops and resynchronize live booking/order state.",
-      "Built complete mobile auth & security lifecycle: `AuthNavigator`, 3 role route guards (`UserGuard`, `VendorGuard`, `UserVendorGuard`), multi-device session management (`ActiveSessionsCard`), live `sessionInvalidator`, and full Order OTP verification modals (`OtpTimerCard`, `VerifyOrderOtpModal`, `RotateOtpConfirmModal`).",
-      "Created the dual-sided live ringing dispatch overlay (`GlobalRingingOverlay`, `VendorRingingModal`, `UserRingingModal`, `ringingStore`) paired with Firebase Cloud Messaging (`fcmService`) and `notificationSyncEngine`.",
-      "Integrated native Razorpay checkout (`react-native-razorpay`), device geolocation, native camera/gallery media pickers for S3 presigned uploads, structured mobile logging (`infrastructure/logger`), `CrashGuard` error boundaries, `AppUpdateGate`, and native Light/Dark theming.",
+      "Engineered a custom HTTP ETag conditional client and local query cache engine backed by AsyncStorage to render cached views instantly and revalidate via HTTP 304 responses.",
+      "Implemented managed WebSocket lifecycles, live cellular/Wi-Fi connectivity monitoring, instant remote session revocation, and automated delta resynchronization to recover cleanly from network drops.",
+      "Built complete mobile authentication and security flows including 3 role-based route guards (Customer, Partner, and Dual-Role), multi-device active session management, live session invalidation, and full Order OTP countdown, verification, and rotation modals.",
+      "Created the dual-sided live ringing dispatch overlay synchronizing real-time customer and partner alert states paired with Firebase Cloud Messaging and notification state reconciliation.",
+      "Integrated native Razorpay checkout, device geolocation, native camera/gallery media pickers for direct AWS S3 presigned uploads, structured mobile diagnostics logging, global error recovery boundaries, backend-enforced app version gates, and native Light/Dark theming.",
     ],
     diagramType: "mobile-app",
   },
@@ -871,7 +871,7 @@ export const architecturePillars: ArchitecturePillar[] = [
       "Designing schemas and transaction boundaries that stay fast under read load and stay consistent when multiple workers touch the same records.",
     specs: [
       "Composite indexing, pre-calculated queries, and eager loading eliminating N+1 bottlenecks in MySQL 8 & PostgreSQL",
-      "Row-level lockForUpdate and optimistic versioning preventing race conditions on concurrent updates",
+      "Row-level pessimistic locking and optimistic versioning preventing race conditions on concurrent updates",
       "Two-tier Redis + in-memory LRU caching with compressed HTTP responses for low-latency APIs",
     ],
     technologies: ["MySQL 8", "PostgreSQL", "Prisma", "Redis", "LRU Cache"],
@@ -967,7 +967,7 @@ export const faqs: FaqItem[] = [
   {
     question: "How does his Enterprise AI Operations platform prevent LLM hallucinations, prompt injection, and provider outages?",
     answer:
-      "Built on Laravel 12 and the Laravel AI SDK, it pairs a Hybrid RAG retrieval layer (Pinecone Serverless 1024-dim Jina embeddings fused with MySQL 8 Full-Text Search via Reciprocal Rank Fusion) with lexical and cosine similarity grounding verification (GroundednessService), prompt-injection sanitization, 3-layer Zero-Trust RBAC (Admin, Manager, Employee), and a multi-provider LLM gateway (Groq, Google Gemini, OpenRouter) with automatic 429/402 circuit breakers. History deduplication and tool payload compression cut LLM token costs by 30–50%, verified across 89 PHPUnit & Pest test suites.",
+      "Built on Laravel 12 and the Laravel AI SDK, it pairs a Hybrid RAG retrieval layer (Pinecone Serverless 1024-dim Jina embeddings fused with MySQL 8 Full-Text Search via Reciprocal Rank Fusion) with lexical and cosine similarity grounding verification, prompt-injection sanitization, 3-layer Zero-Trust RBAC (Admin, Manager, Employee), and a multi-provider LLM gateway (Groq, Google Gemini, OpenRouter) with automatic 429/402 circuit breakers. History deduplication and tool payload compression cut LLM token costs by 30–50%, verified across 89 PHPUnit & Pest test suites.",
   },
   {
     question: "How does he architect scalable real-time booking and double-entry financial settlement systems?",
@@ -977,7 +977,7 @@ export const faqs: FaqItem[] = [
   {
     question: "How does he build offline-resilient React Native mobile applications?",
     answer:
-      "His dual-role React Native 0.87 (New Architecture) mobile suite spans 20+ modular feature domains with a custom HTTP 304 ETag query cache engine, automatic Socket.IO reconnection and state reconciliation (GlobalResyncCoordinator), live partner ringing dispatch alerts via Firebase Cloud Messaging, native Razorpay checkout, Reanimated 4 60fps UI transitions, CrashGuard error boundaries, and AppUpdateGate version enforcement.",
+      "His dual-role React Native 0.87 (New Architecture) mobile suite spans 20+ modular feature domains with a custom HTTP 304 ETag query cache engine, automatic Socket.IO reconnection and global state resynchronization, live partner ringing dispatch alerts via Firebase Cloud Messaging, native Razorpay checkout, Reanimated 4 60fps UI transitions, resilient error recovery boundaries, and automated version gating.",
   },
   {
     question: "What awards, education, and career milestones support his engineering background?",
