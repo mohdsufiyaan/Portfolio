@@ -1650,14 +1650,23 @@ export function D3ArchitectureBlueprints({
 
   return (
     <div className="space-y-6">
-      {/* Top Bar: 3-System Selector Tabs */}
-      <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+      {/* PARENT TABS: Top-Level Platform Selector (Outside Canvas) */}
+      <div>
+        <div className="mb-2.5 flex items-center justify-between gap-2 px-1">
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+            01 // Select Flagship Platform
+          </span>
+          <span className="hidden font-mono text-[11px] text-slate-400 sm:inline">
+            3 Production Systems
+          </span>
+        </div>
+
         <div
           role="tablist"
           aria-label="Select flagship system architecture"
-          className="flex flex-wrap gap-2.5"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-3"
         >
-          {BLUEPRINTS.map((bp) => {
+          {BLUEPRINTS.map((bp, idx) => {
             const Icon = SYSTEM_ICONS[bp.id];
             const active = bp.id === blueprint.id;
             return (
@@ -1667,39 +1676,34 @@ export function D3ArchitectureBlueprints({
                 role="tab"
                 aria-selected={active}
                 onClick={() => setSystemId(bp.id)}
-                className={`relative inline-flex min-h-[44px] items-center gap-2 rounded-2xl px-4 py-2 text-xs font-semibold sm:px-5 sm:text-sm ${
+                className={`group relative flex min-h-[68px] w-full items-center gap-3.5 rounded-2xl px-4 py-3 text-left transition-all ${
                   active ? "btn-cool-primary" : "btn-cool-secondary"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                <span>{bp.tabLabel}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* 4 Architectural View Layer Switcher */}
-        <div
-          role="tablist"
-          aria-label="Switch architectural diagram layer"
-          className="surface-subcard flex flex-wrap gap-1.5 rounded-2xl p-1.5"
-        >
-          {VIEW_TABS.map((vt) => {
-            const VIcon = vt.icon;
-            const active = viewId === vt.id;
-            return (
-              <button
-                key={vt.id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setViewId(vt.id)}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 font-mono text-xs font-semibold ${
-                  active ? "btn-cool-primary" : "btn-cool-ghost border-transparent bg-transparent"
-                }`}
-              >
-                <VIcon className="h-3.5 w-3.5" />
-                {vt.label}
+                <span
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors ${
+                    active
+                      ? "border-current/25 bg-black/10"
+                      : "surface-subcard text-sky-400"
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span
+                    className={`flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] ${
+                      active ? "opacity-85" : "text-slate-400"
+                    }`}
+                  >
+                    <span>PLATFORM 0{idx + 1}</span>
+                    {active && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                    )}
+                  </span>
+                  <span className="mt-0.5 block truncate text-sm font-semibold leading-snug sm:text-[15px]">
+                    {bp.tabLabel}
+                  </span>
+                </span>
               </button>
             );
           })}
@@ -1718,11 +1722,13 @@ export function D3ArchitectureBlueprints({
         />
 
         {/* Blueprint Header */}
-        <div className="relative z-10 flex flex-wrap items-start justify-between gap-4 border-b border-white/[0.08] px-6 py-5 sm:px-8">
-          <div>
-            <div className="inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-sky-400">
-              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-              {blueprint.tag} // {currentView.label.toUpperCase()}
+        <div className="relative z-10 flex flex-col gap-4 border-b border-white/[0.08] px-5 py-5 sm:flex-row sm:items-start sm:justify-between sm:px-8">
+          <div className="min-w-0 flex-1">
+            <div className="inline-flex flex-wrap items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-sky-400">
+              <Sparkles className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+              <span>
+                {blueprint.tag} // {currentView.label.toUpperCase()}
+              </span>
             </div>
             <h3 className="mt-1.5 text-xl font-semibold tracking-tight text-white sm:text-2xl">
               {blueprint.title}
@@ -1732,11 +1738,61 @@ export function D3ArchitectureBlueprints({
 
           <Link
             href={`/projects/${blueprint.slug}`}
-            className="btn-cool-secondary inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 font-mono text-xs font-semibold"
+            className="btn-cool-secondary inline-flex min-h-[40px] shrink-0 items-center gap-1.5 self-start rounded-xl px-4 py-2 font-mono text-xs font-semibold"
           >
             Full Case Study
             <ArrowUpRight className="h-3.5 w-3.5 text-sky-400" />
           </Link>
+        </div>
+
+        {/* CHILD TABS: Nested Architectural Layer Switcher (Inside Selected Platform Canvas) */}
+        <div className="relative z-10 border-b border-sky-400/15 bg-sky-500/[0.04] px-5 py-3.5 sm:px-8">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:gap-4">
+            <div className="inline-flex shrink-0 items-center gap-2 self-start xl:self-center">
+              <span className="chip-accent inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em]">
+                <Layers className="h-3.5 w-3.5 shrink-0" />
+                Diagram Layer
+              </span>
+              <span className="font-mono text-[11px] text-slate-400 xl:hidden">
+                4 interactive views
+              </span>
+            </div>
+
+            <div
+              role="tablist"
+              aria-label="Switch architectural diagram layer"
+              className="surface-subcard grid flex-1 grid-cols-2 gap-1.5 rounded-2xl p-1.5 lg:grid-cols-4"
+            >
+              {VIEW_TABS.map((vt, idx) => {
+                const VIcon = vt.icon;
+                const active = viewId === vt.id;
+                return (
+                  <button
+                    key={vt.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setViewId(vt.id)}
+                    className={`group relative inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-xl px-2.5 py-2 text-center font-mono text-[11px] font-semibold leading-tight transition-all sm:px-3 sm:text-xs ${
+                      active
+                        ? "chip-accent ring-1 ring-sky-400/50 shadow-[0_0_22px_-8px_rgba(56,189,248,0.75),inset_0_-2px_0_0_currentColor]"
+                        : "btn-cool-ghost border-transparent bg-transparent hover:border-sky-400/35 hover:bg-sky-400/10"
+                    }`}
+                  >
+                    <VIcon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{vt.label}</span>
+                    {active && (
+                      <span
+                        aria-hidden="true"
+                        className="ml-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-current"
+                      />
+                    )}
+                    <span className="sr-only">Layer {idx + 1}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Interactive System Diagram Canvas */}

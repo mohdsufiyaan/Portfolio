@@ -185,35 +185,32 @@ export const skillGroups: SkillGroup[] = [
   {
     id: "backend",
     title: "Languages & Backend",
-    subtitle: "High-throughput APIs, microservices, and real-time servers",
+    subtitle: "High-throughput APIs, workers, and real-time servers",
     accent: "cyan",
     items: [
-      { name: "PHP 8.x & Laravel 12", context: "Enterprise backends & AI SDK" },
-      { name: "Node.js & Express 5", context: "Async REST & real-time APIs" },
+      { name: "PHP 8.2 & Laravel 12", context: "Enterprise APIs, queues & modular services" },
+      { name: "Node.js & Express 5", context: "High-throughput async REST & event servers" },
       { name: "TypeScript & ES6+", context: "End-to-end strict type safety" },
-      { name: "Socket.IO", context: "Multi-instance WebSocket sync" },
-      { name: "BullMQ", context: "Retryable async job queues" },
-      { name: "Prisma ORM & Zod", context: "Typed schemas & API validation" },
-      { name: "OAuth 2.0, JWT & Sanctum", context: "Auth & encrypted tokens" },
-      { name: "REST & Microservices", context: "Modular service design" },
-      { name: "Golang (Basic)", context: "Systems & backend utility" },
+      { name: "Socket.IO", context: "Multi-instance WebSocket sync & live presence" },
+      { name: "BullMQ", context: "Retryable background job queues & schedulers" },
+      { name: "Prisma ORM & Zod", context: "Typed relational schemas & runtime validation" },
+      { name: "OAuth 2.0, JWT & Sanctum", context: "Token auth, MFA & encrypted workspace vaults" },
+      { name: "Golang (Basic)", context: "Systems utilities & concurrent CLI tooling" },
     ],
   },
   {
     id: "ai-llm",
     title: "AI & LLM Systems",
-    subtitle: "Production RAG, grounded autonomous agents, and failover gateways",
+    subtitle: "Production RAG, grounded autonomous agents, and multi-provider routing",
     accent: "amber",
     items: [
-      { name: "Laravel AI SDK & LangChain", context: "Autonomous agent orchestration" },
-      { name: "Hybrid RAG", context: "Vector + MySQL Full-Text RRF" },
-      { name: "Pinecone Serverless", context: "1024-dim vector retrieval" },
-      { name: "Jina AI & OpenAI Embeddings", context: "Sentence-aware chunking" },
-      { name: "LLM Agents & Tool Calling", context: "39 tools & 19 skills" },
-      { name: "Multi-LLM Failover", context: "Groq · Google Gemini · OpenRouter" },
-      { name: "OpenAI API", context: "Enterprise workflow automation" },
-      { name: "MCP (Model Context Protocol)", context: "Structured context tools" },
-      { name: "Prompt Engineering & Guardrails", context: "Injection defense & grounding" },
+      { name: "Laravel AI SDK & LangChain", context: "Bounded multi-step agent orchestration" },
+      { name: "Hybrid RAG (RRF)", context: "Semantic vector + lexical full-text fusion" },
+      { name: "Jina & OpenAI Embeddings", context: "1024-dim sentence-aware chunking & indexing" },
+      { name: "LLM Agents & Tool Calling", context: "39 domain tools, intent routing & 19 skills" },
+      { name: "Multi-LLM Routing", context: "Groq, Gemini & OpenRouter with token budgeting" },
+      { name: "MCP (Model Context Protocol)", context: "Standardized external context & tool bridges" },
+      { name: "Prompt Guardrails & Grounding", context: "Injection defense & tool-output verification" },
     ],
   },
   {
@@ -222,14 +219,12 @@ export const skillGroups: SkillGroup[] = [
     subtitle: "Concurrency control, fault tolerance, and zero-trust defense",
     accent: "emerald",
     items: [
-      { name: "Scalable & Event-Driven Design", context: "Decoupled async pipelines" },
-      { name: "Horizontal Scaling", context: "Redis adapter & stateless APIs" },
-      { name: "Caching (Redis & LRU)", context: "Multi-tier low-latency reads" },
-      { name: "Message Queues & Rate Limiting", context: "Backpressure & traffic shaping" },
-      { name: "Concurrency Control", context: "Row locking & optimistic versioning" },
-      { name: "RBAC + Zero Trust (ZTD)", context: "3-layer query, route & AI scoping" },
-      { name: "Circuit Breakers & Failover", context: "429/402 automatic recovery" },
-      { name: "Observability", context: "Pino structured logs & Prometheus" },
+      { name: "Event-Driven Architecture", context: "Transactional outboxes & decoupled workflows" },
+      { name: "Horizontal Scaling", context: "Stateless API clusters & pub/sub fan-out" },
+      { name: "Multi-Tier Caching (LRU & ETag)", context: "In-memory L1 + HTTP 304 conditional reads" },
+      { name: "Rate Limiting & Backpressure", context: "Traffic shaping, quotas & burst protection" },
+      { name: "Concurrency Control", context: "Pessimistic row locks, mutexes & versioning" },
+      { name: "Zero-Trust RBAC & Resilience", context: "3-layer scoping & 429/402 circuit breakers" },
     ],
   },
   {
@@ -238,12 +233,12 @@ export const skillGroups: SkillGroup[] = [
     subtitle: "Responsive web apps, cross-platform mobile, and desktop clients",
     accent: "violet",
     items: [
-      { name: "Next.js & React.js", context: "SSR/App Router web platforms" },
-      { name: "React Native", context: "Live mobile booking clients" },
-      { name: "TypeScript & Redux", context: "Predictable client state" },
-      { name: "Tailwind CSS & HTML5/CSS3", context: "Responsive design systems" },
-      { name: "Electron.js", context: "Desktop attendance software" },
-      { name: "Bootstrap & jQuery", context: "Enterprise CMS & web maintenance" },
+      { name: "Next.js 16 & React 19", context: "App Router SSR portals & admin control planes" },
+      { name: "React Native 0.87", context: "New Architecture dual-role mobile apps" },
+      { name: "Zustand & Redux", context: "Predictable client state & offline query stores" },
+      { name: "Tailwind CSS & NativeWind", context: "Responsive web & mobile design systems" },
+      { name: "Electron.js", context: "Cross-platform native desktop utilities" },
+      { name: "Bootstrap & jQuery", context: "Enterprise CMS & legacy web maintenance" },
     ],
   },
   {
@@ -252,11 +247,11 @@ export const skillGroups: SkillGroup[] = [
     subtitle: "Schema modeling, composite indexing, and vector stores",
     accent: "cyan",
     items: [
-      { name: "PostgreSQL", context: "Relational core with Prisma ORM" },
-      { name: "MySQL 8", context: "Composite indexes & Full-Text Search" },
-      { name: "Redis", context: "Cache, pub/sub adapter, BullMQ & rate limits" },
-      { name: "Pinecone", context: "Serverless vector similarity index" },
-      { name: "MongoDB", context: "Document data stores" },
+      { name: "PostgreSQL", context: "46-model relational schemas & ACID ledgers" },
+      { name: "MySQL 8", context: "Composite indexes & Full-Text Search tuning" },
+      { name: "Redis", context: "L2 cache, Socket.IO pub/sub & distributed locks" },
+      { name: "Pinecone Serverless", context: "1024-dim vector similarity index for RAG" },
+      { name: "MongoDB", context: "Flexible document & event data stores" },
     ],
   },
   {
@@ -265,14 +260,14 @@ export const skillGroups: SkillGroup[] = [
     subtitle: "AWS infrastructure, zero-downtime delivery, and test verification",
     accent: "emerald",
     items: [
-      { name: "AWS (EC2, S3, RDS, CloudFront)", context: "Hosting, CDN & presigned uploads" },
-      { name: "Nginx, Apache & Linux", context: "Reverse proxy, SSL & server hardening" },
-      { name: "PM2 & Supervisor", context: "Process orchestration & hot reloads" },
-      { name: "PHPUnit & Pest", context: "65+ backend & golden agent tests" },
-      { name: "Vitest & Supertest", context: "Automated Node.js API verification" },
-      { name: "Pino & Prometheus", context: "Production telemetry & metrics" },
-      { name: "Razorpay & Firebase FCM", context: "Payments & push notifications" },
-      { name: "Git, Bitbucket, JIRA & Postman", context: "Agile reviews & API workflows" },
+      { name: "AWS (EC2, S3, RDS, CloudFront)", context: "Edge CDN, hosting & presigned uploads" },
+      { name: "Nginx, Apache & Linux", context: "Reverse proxies, SSL & server hardening" },
+      { name: "PM2 & Supervisor", context: "Cluster process management & hot reloads" },
+      { name: "PHPUnit & Pest", context: "89 backend, RBAC & golden agent suites" },
+      { name: "Vitest & Supertest", context: "56 automated Node.js API verification suites" },
+      { name: "Pino & Prometheus", context: "PII-redacted structured logs & live metrics" },
+      { name: "Razorpay & Firebase FCM", context: "Payment gateways & real-time push delivery" },
+      { name: "Git, Bitbucket, JIRA & Postman", context: "Agile code reviews & API workflows" },
     ],
   },
 ];
@@ -900,10 +895,10 @@ export const architecturePillars: ArchitecturePillar[] = [
     specs: [
       "AWS EC2, S3, RDS, and CloudFront CDN with Nginx/Apache reverse proxies on Linux",
       "PM2 hot-reload process orchestration, Supervisor workers, Pino structured logs, and Prometheus metrics",
-      "65+ PHPUnit & Pest tests (including prompt injection & golden agent cases) plus Vitest & Supertest API tests",
+      "89 PHPUnit/Pest suites (including prompt injection & golden agent cases) plus 56 Vitest & Supertest API suites",
     ],
     technologies: ["AWS", "CloudFront", "Nginx", "PM2", "Pino", "Prometheus"],
-    metric: { value: "65+ Tests", label: "Verified Production Suites" },
+    metric: { value: "145+ Suites", label: "Verified Production Tests" },
   },
 ];
 
@@ -915,22 +910,6 @@ export const achievements: AchievementItem[] = [
     category: "Honor",
     description:
       "Recognized as top engineering performer for delivering scalable Laravel platforms, MySQL optimizations, and flagship multi-domain products.",
-  },
-  {
-    title: "30–50% LLM Token Cost Reduction",
-    organization: "Enterprise AI Operations Platform",
-    year: "2024–2026",
-    category: "Engineering Impact",
-    description:
-      "Significantly reduced production LLM inference expenditure through conversation history deduplication and structured tool-response compression.",
-  },
-  {
-    title: "39-Tool Grounded Autonomous AI Agent",
-    organization: "Adtric Solution Pvt. Ltd.",
-    year: "2024–2026",
-    category: "Engineering Impact",
-    description:
-      "Architected an enterprise AI agent with 19 domain skills, Hybrid RAG (Pinecone + MySQL RRF), multi-LLM circuit breakers, and 65+ PHPUnit/Pest tests.",
   },
   {
     title: "Vintage Warrior Award",
@@ -948,45 +927,27 @@ export const achievements: AchievementItem[] = [
     description:
       "Awarded for engineering excellence in building and shipping the 4Achievers B2B CRM and Learning Management System.",
   },
-  {
-    title: "Bachelor of Computer Science (BCS)",
-    organization: "Mahatma Jyotiba Phule Rohilkhand University",
-    year: "2017–2019",
-    category: "Education",
-    description:
-      "Completed undergraduate studies in Computer Science, building the core foundation in algorithms, databases, and software engineering.",
-  },
 ];
 
 export const faqs: FaqItem[] = [
   {
-    question: "Who is Mohd Sufiyan and what does he specialize in?",
+    question: "How do you keep production LLM agents grounded, secure, and cost-efficient?",
     answer:
-      "Mohd Sufiyan is a Senior Software Engineer based in Noida, India with 5.5+ years of production experience specializing in full-stack architecture (Laravel 12/PHP 8.2, Node.js/Express 5, Next.js 16, React Native 0.87), distributed real-time systems (Socket.IO, Redis, BullMQ), database performance tuning (PostgreSQL, MySQL 8), AWS infrastructure, and production AI systems including Hybrid RAG and autonomous multi-tool LLM agents.",
+      "Every agent run is bounded to 6 reasoning steps with dynamic tool selection and 3-layer Zero-Trust RBAC (database query scoping, controller policies, and pre-flight AI tool checks). Responses are verified against tool outputs via lexical/cosine grounding, prompt-injection patterns are sanitized, and duplicate history removal plus tool payload compression reduce token spend by 30–50%.",
   },
   {
-    question: "How does his Enterprise AI Operations platform prevent LLM hallucinations, prompt injection, and provider outages?",
+    question: "How do you prevent double-booking and race conditions across horizontally scaled APIs?",
     answer:
-      "Built on Laravel 12 and the Laravel AI SDK, it pairs a Hybrid RAG retrieval layer (Pinecone Serverless 1024-dim Jina embeddings fused with MySQL 8 Full-Text Search via Reciprocal Rank Fusion) with lexical and cosine similarity grounding verification, prompt-injection sanitization, 3-layer Zero-Trust RBAC (Admin, Manager, Employee), and a multi-provider LLM gateway (Groq, Google Gemini, OpenRouter) with automatic 429/402 circuit breakers. History deduplication and tool payload compression cut LLM token costs by 30–50%, verified across 89 PHPUnit & Pest test suites.",
+      "Critical mutations combine distributed Redis mutex locks, pessimistic row-level locking, optimistic version columns, and idempotency keys. State changes emit through transactional outboxes and synchronize across stateless PM2 nodes via Socket.IO with a Redis adapter, while background side effects run asynchronously on dedicated BullMQ queues.",
   },
   {
-    question: "How does he architect scalable real-time booking and double-entry financial settlement systems?",
+    question: "How do you optimize read latency across web and mobile clients?",
     answer:
-      "In his 3-app Express 5 + Next.js 16 + PostgreSQL (Prisma 7, 46 models) platform, live bookings synchronize across stateless PM2 nodes via Socket.IO with a Redis adapter while distributed Redis mutex locks and keyspace expiry listeners prevent double-booking. Partner payouts run on a 15-model double-entry settlement ledger with transactional outboxes, MFA Step-Up authorization, a payout circuit breaker, L1 LRU + L2 Redis + HTTP 304 ETag caching, and 6 BullMQ worker queues backed by 56 Vitest & Supertest suites.",
+      "Hot read paths pair an L1 in-memory LRU cache with an L2 Redis cache and automatic mutation-triggered invalidation. On mobile and web, conditional HTTP 304 ETag revalidation eliminates redundant payloads, while static media is served directly through AWS S3 presigned URLs and CloudFront edge caching.",
   },
   {
-    question: "How does he build offline-resilient React Native mobile applications?",
+    question: "How do you validate system reliability before shipping to production?",
     answer:
-      "His dual-role React Native 0.87 (New Architecture) mobile suite spans 20+ modular feature domains with a custom HTTP 304 ETag query cache engine, automatic Socket.IO reconnection and global state resynchronization, live partner ringing dispatch alerts via Firebase Cloud Messaging, native Razorpay checkout, Reanimated 4 60fps UI transitions, resilient error recovery boundaries, and automated version gating.",
-  },
-  {
-    question: "What awards, education, and career milestones support his engineering background?",
-    answer:
-      "Mohd Sufiyan holds a Bachelor of Computer Science (BCS) from Mahatma Jyotiba Phule Rohilkhand University (2017–2019). He has engineered production systems at Adtric Solution Pvt. Ltd. (May 2024 – Present) and I3 Infosoft Pvt. Ltd. (Jan 2021 – Mar 2024), earning Developer of the Year 2024 and Vintage Warrior at I3 Infosoft plus the GemsBond award for the 4Achievers CRM & LMS platform.",
-  },
-  {
-    question: "How can recruiters, engineering managers, or clients contact Mohd Sufiyan directly?",
-    answer:
-      "You can contact Mohd Sufiyan directly without any contact form via email at sufiyanmohd345@gmail.com, by phone at +91-9193221557, or connect via LinkedIn (linkedin.com/in/mohd-sufiyan-it) and GitHub (github.com/mohdsufiyaan). His latest resume PDF is also available for instant download on this portfolio.",
+      "Critical workflows are guarded by 145+ automated test suites (89 PHPUnit/Pest suites covering RBAC, prompt-injection defense, and golden agent flows plus 56 Vitest/Supertest API suites), backed in production by PII-redacted Pino structured logs, Prometheus telemetry, and circuit breakers for upstream provider outages.",
   },
 ];

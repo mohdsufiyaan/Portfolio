@@ -12,7 +12,6 @@ import {
   Shield,
   Sparkles,
   Terminal,
-  Trophy,
   Zap,
 } from "lucide-react";
 import {
@@ -296,7 +295,7 @@ export default async function HomePage() {
           <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div className="max-w-2xl">
               <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
-                01 // Highlighted Skills &amp; Interactive Capability Map
+                01 // Interactive Capability Map &amp; Technical Stack
               </p>
               <h2
                 id="skills-heading"
@@ -309,8 +308,8 @@ export default async function HomePage() {
               </h2>
             </div>
             <p className="max-w-[42ch] text-sm leading-relaxed text-slate-400 sm:text-[15px]">
-              Click any highlighted specialty card, drag interactive nodes in
-              the capability network, or filter by engineering domain.
+              Explore the interactive capability constellation, drag nodes to
+              inspect cross-stack synergies, or filter by engineering domain.
             </p>
           </div>
         </Reveal>
@@ -384,33 +383,6 @@ export default async function HomePage() {
                 checkout responses. Those edge cases shape the locks, queues,
                 circuit breakers, and zero-trust permissions I ship.
               </p>
-
-              <div className="mt-7 grid gap-3 border-t border-white/[0.08] pt-6 sm:grid-cols-3">
-                <div className="surface-subcard rounded-xl p-3.5">
-                  <div className="font-mono text-xs font-semibold text-sky-400">
-                    Backend Core
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-white">
-                    Laravel 12 &amp; Node.js
-                  </div>
-                </div>
-                <div className="surface-subcard rounded-xl p-3.5">
-                  <div className="font-mono text-xs font-semibold text-amber-400">
-                    Applied AI
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-white">
-                    Hybrid RAG &amp; Agents
-                  </div>
-                </div>
-                <div className="surface-subcard rounded-xl p-3.5">
-                  <div className="font-mono text-xs font-semibold text-emerald-400">
-                    Scale &amp; Ops
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-white">
-                    Redis · BullMQ · AWS
-                  </div>
-                </div>
-              </div>
             </TiltSpotlightCard>
           </Reveal>
 
@@ -475,7 +447,7 @@ export default async function HomePage() {
                     </div>
                     <div>
                       <div className="font-mono text-xs font-semibold uppercase tracking-wider text-emerald-400">
-                        Education &amp; Honors
+                        Education
                       </div>
                       <h3 className="text-base font-semibold text-white">
                         {profile.education.degree}
@@ -486,15 +458,13 @@ export default async function HomePage() {
                     {profile.education.period}
                   </span>
                 </div>
-                <p className="mt-2.5 text-sm text-slate-300">
+                <p className="mt-2.5 text-sm font-medium text-slate-200">
                   {profile.education.institution}
                 </p>
-                <div className="chip-amber mt-4 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-medium">
-                  <Trophy className="h-4 w-4 shrink-0" />
-                  <span>
-                    Developer of the Year 2024 · Vintage Warrior · GemsBond
-                  </span>
-                </div>
+                <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                  Undergraduate foundation in algorithms, relational database
+                  systems, and software engineering.
+                </p>
               </TiltSpotlightCard>
             </Reveal>
           </div>
@@ -768,14 +738,14 @@ export default async function HomePage() {
         <Reveal direction="up">
           <div className="mb-10 max-w-2xl">
             <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
-              08 // Recognition &amp; Measurable Outcomes
+              08 // Recognition &amp; Honors
             </p>
             <h2
               id="achievements-heading"
               className="mt-2.5 text-2xl font-semibold tracking-[-0.02em] text-white sm:text-3xl lg:text-[2.5rem] lg:leading-[1.15]"
             >
               Awards &amp;{" "}
-              <span className="text-gradient-cyan">Career Highlights.</span>
+              <span className="text-gradient-cyan">Recognition.</span>
             </h2>
           </div>
         </Reveal>

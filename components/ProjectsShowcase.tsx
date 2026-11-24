@@ -69,7 +69,11 @@ function FeaturedProjectCard({
           </h3>
 
           {/* Interactive Storytelling Switcher */}
-          <div className="mt-4 flex flex-wrap gap-1.5 border-b border-white/[0.08] pb-3">
+          <div
+            role="tablist"
+            aria-label={`${project.shortName} case study sections`}
+            className="surface-subcard mt-4 grid grid-cols-2 gap-1 rounded-xl p-1 sm:grid-cols-4"
+          >
             {(
               [
                 ["overview", "Overview"],
@@ -83,9 +87,13 @@ function FeaturedProjectCard({
                 <button
                   key={key}
                   type="button"
+                  role="tab"
+                  aria-selected={isTabActive}
                   onClick={() => setTab(key)}
-                  className={`rounded-lg px-3 py-1.5 font-mono text-xs font-semibold ${
-                    isTabActive ? "btn-cool-primary" : "btn-cool-secondary"
+                  className={`inline-flex min-h-[36px] w-full items-center justify-center rounded-lg px-2.5 py-1.5 font-mono text-xs font-semibold transition-all ${
+                    isTabActive
+                      ? "btn-cool-primary shadow-sm"
+                      : "btn-cool-ghost border-transparent bg-transparent"
                   }`}
                 >
                   {label}
