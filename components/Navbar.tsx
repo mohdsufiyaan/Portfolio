@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
@@ -24,11 +24,22 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeId, setActiveId] = useState<string>("");
+  const clickLockRef = useRef<{ id: string; until: number } | null>(null);
+  const lockTimerRef = useRef<number | null>(null);
+
+  const clearClickLock = useCallback(() => {
+    clickLockRef.current = null;
+    if (lockTimerRef.current !== null) {
+      window.clearTimeout(lockTimerRef.current);
+      lockTimerRef.current = null;
+    }
+  }, []);
 
   const syncActiveSection = useCallback(() => {
     setScrolled(window.scrollY > 24);
 
     if (pathname !== "/") {
+      clearClickLock();
       setActiveId(
         pathname.startsWith("/projects")
           ? "projects"
@@ -39,32 +50,40 @@ export function Navbar() {
       return;
     }
 
-    const scrollPos = window.scrollY + 150;
-    const atBottom =
-      window.innerHeight + window.scrollY >=
-      document.documentElement.scrollHeight - 60;
-
-    if (window.scrollY < 160) {
-      setActiveId("");
+    // Hold clicked target during smooth scroll so intermediate sections don't flash active
+    if (clickLockRef.current && performance.now() < clickLockRef.current.until) {
       return;
     }
+    clickLockRef.current = null;
 
+    const focalLine = Math.max(120, Math.min(window.innerHeight * 0.32, 260));
     let current = "";
     for (const item of navItems) {
       const el = document.getElementById(item.id);
       if (!el) continue;
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      if (scrollPos >= top) {
+      const { top, bottom } = el.getBoundingClientRect();
+      if (top <= focalLine && bottom > focalLine) {
         current = item.id;
+        break;
       }
     }
 
-    if (atBottom) {
-      current = navItems[navItems.length - 1].id;
-    }
-
     setActiveId(current);
-  }, [pathname]);
+  }, [pathname, clearClickLock]);
+
+  const lockActiveDuringScroll = useCallback(
+    (id: string, durationMs = 1250) => {
+      clearClickLock();
+      clickLockRef.current = { id, until: performance.now() + durationMs };
+      setActiveId(id);
+      lockTimerRef.current = window.setTimeout(() => {
+        clickLockRef.current = null;
+        lockTimerRef.current = null;
+        syncActiveSection();
+      }, durationMs);
+    },
+    [clearClickLock, syncActiveSection],
+  );
 
   useEffect(() => {
     let rafId = 0;
@@ -76,15 +95,27 @@ export function Navbar() {
       });
     };
 
+    const onUserScrollIntent = () => {
+      if (clickLockRef.current) {
+        clearClickLock();
+        onScroll();
+      }
+    };
+
     syncActiveSection();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll, { passive: true });
+    window.addEventListener("wheel", onUserScrollIntent, { passive: true });
+    window.addEventListener("touchstart", onUserScrollIntent, { passive: true });
     return () => {
       cancelAnimationFrame(rafId);
+      clearClickLock();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      window.removeEventListener("wheel", onUserScrollIntent);
+      window.removeEventListener("touchstart", onUserScrollIntent);
     };
-  }, [syncActiveSection]);
+  }, [syncActiveSection, clearClickLock]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -104,7 +135,7 @@ export function Navbar() {
     const target = document.getElementById(id);
     if (!target) return;
     e.preventDefault();
-    setActiveId(id);
+    lockActiveDuringScroll(id);
     smoothScrollTo(target, -88);
     window.history.replaceState(null, "", `/#${id}`);
   };
@@ -123,7 +154,7 @@ export function Navbar() {
           onClick={(e) => {
             if (pathname === "/") {
               e.preventDefault();
-              setActiveId("");
+              lockActiveDuringScroll("", 1150);
               smoothScrollTo(0);
               window.history.replaceState(null, "", "/");
             }
