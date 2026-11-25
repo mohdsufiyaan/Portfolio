@@ -169,7 +169,7 @@ export function Navbar() {
             <span className="text-sm font-semibold tracking-tight text-white">
               {profile.name}
             </span>
-            <span className="font-mono text-[11px] text-slate-400">
+            <span className="hidden whitespace-nowrap font-mono text-[11px] text-slate-400 min-[360px]:block">
               Senior Software Engineer
             </span>
           </span>
@@ -177,7 +177,7 @@ export function Navbar() {
 
         <nav
           aria-label="Primary navigation"
-          className="hidden items-center gap-1 lg:flex"
+          className="hidden items-center gap-1 xl:flex"
         >
           {navItems.map((item) => {
             const isActive = activeId === item.id;
@@ -198,7 +198,7 @@ export function Navbar() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-2 lg:flex">
+        <div className="hidden items-center gap-2 xl:flex">
           <ThemeToggle />
           <Link
             href="/resume"
@@ -221,7 +221,7 @@ export function Navbar() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center gap-2 xl:hidden">
           <ThemeToggle />
           <button
             type="button"
@@ -244,7 +244,7 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="glass-panel mx-auto mt-2 max-w-7xl rounded-2xl p-4 shadow-2xl lg:hidden"
+            className="glass-panel mx-auto mt-2 max-w-7xl rounded-2xl p-4 shadow-2xl xl:hidden"
           >
             <nav
               aria-label="Mobile navigation"
