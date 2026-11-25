@@ -309,6 +309,18 @@ export function HeroScene() {
 
   const [viewMode, setViewMode] = useState<ViewMode>("orbit");
   const [paused, setPaused] = useState(false);
+  // Narrow cards get a tighter coordinate space so SVG labels stay legible
+  const [compact, setCompact] = useState(false);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setCompact(entry.contentRect.width < 480);
+    });
+    ro.observe(host);
+    return () => ro.disconnect();
+  }, []);
 
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
@@ -321,8 +333,8 @@ export function HeroScene() {
     const svgEl = svgRef.current;
     if (!svgEl) return;
 
-    const width = 580;
-    const height = 440;
+    const width = compact ? 360 : 580;
+    const height = compact ? 390 : 440;
     const cx = width / 2;
     const cy = height / 2;
 
@@ -418,8 +430,8 @@ export function HeroScene() {
     ======================================================================== */
     if (viewMode === "orbit") {
       const rings = [
-        { rx: 120, ry: 98, speed: 0.22, dash: "4 6", op: isDark ? 0.28 : 0.34 },
-        { rx: 208, ry: 164, speed: -0.13, dash: "3 7", op: isDark ? 0.22 : 0.28 },
+        { rx: compact ? 86 : 120, ry: compact ? 92 : 98, speed: 0.22, dash: "4 6", op: isDark ? 0.28 : 0.34 },
+        { rx: compact ? 150 : 208, ry: compact ? 172 : 164, speed: -0.13, dash: "3 7", op: isDark ? 0.22 : 0.28 },
       ];
 
       const g = svg.append("g").attr("transform", `translate(${cx}, ${cy})`);
@@ -484,6 +496,8 @@ export function HeroScene() {
 
       // Center Core Architectural Gauge (d3.arc)
       const coreGroup = g.append("g");
+      // Static wrapper scale; child rotations keep their own transforms
+      if (compact) coreGroup.attr("transform", "scale(0.78)");
       const compassOuter = coreGroup
         .append("circle")
         .attr("r", 54)
@@ -573,7 +587,7 @@ export function HeroScene() {
       const nodesLayer = g.append("g");
       const skillNodes = ORBIT_SKILLS.map((sk, idx) => {
         const col = palette[sk.accent];
-        const pillW = Math.round(sk.label.length * 6.4 + 26);
+        const pillW = Math.round(sk.label.length * (compact ? 6.7 : 6.4) + 26);
         const pillH = 24;
 
         const nodeG = nodesLayer
@@ -620,7 +634,7 @@ export function HeroScene() {
           .attr("y", 3.5)
           .attr("text-anchor", "middle")
           .attr("fill", inkPrimary)
-          .attr("font-size", "10.2px")
+          .attr("font-size", compact ? "10.8px" : "10.2px")
           .attr("font-weight", "700")
           .attr("font-family", "var(--font-mono), monospace")
           .style("pointer-events", "none")
@@ -663,8 +677,9 @@ export function HeroScene() {
           // Breathing center pulse waves
           const p1 = (elapsed * 0.45) % 1;
           const p2 = (elapsed * 0.45 + 0.5) % 1;
-          pulseWave1.attr("r", 46 + p1 * 145).attr("stroke-opacity", (1 - p1) * (isDark ? 0.28 : 0.22));
-          pulseWave2.attr("r", 46 + p2 * 145).attr("stroke-opacity", (1 - p2) * (isDark ? 0.24 : 0.18));
+          const pulseSpan = compact ? 120 : 145;
+          pulseWave1.attr("r", 46 + p1 * pulseSpan).attr("stroke-opacity", (1 - p1) * (isDark ? 0.28 : 0.22));
+          pulseWave2.attr("r", 46 + p2 * pulseSpan).attr("stroke-opacity", (1 - p2) * (isDark ? 0.24 : 0.18));
 
           // Counter-rotate center compass
           const deg = (elapsed * 22) % 360;
@@ -675,8 +690,16 @@ export function HeroScene() {
           skillNodes.forEach((item, idx) => {
             const rCfg = rings[item.sk.ring];
             const ang = item.sk.baseAngle + elapsed * rCfg.speed;
-            item.x = Math.cos(ang) * rCfg.rx;
-            item.y = Math.sin(ang) * rCfg.ry;
+            if (compact) {
+              // No room to orbit without collisions: two columns that drift gently
+              const row = Math.floor(idx / 2);
+              const side = idx % 2 === 0 ? -1 : 1;
+              item.x = side * [94, 100, 112, 106, 94][row] + Math.cos(elapsed * 0.9 + idx) * 3;
+              item.y = [-158, -90, 0, 90, 158][row] + Math.sin(elapsed * 1.1 + idx) * 5;
+            } else {
+              item.x = Math.cos(ang) * rCfg.rx;
+              item.y = Math.sin(ang) * rCfg.ry;
+            }
 
             const isAct = idx === focusedIdx;
             // Subtle depth scale based on vertical orbital position
@@ -735,7 +758,7 @@ export function HeroScene() {
        MODE 2: ANIMATED RADAR WITH LIVE 360° TELEMETRY SWEEP (d3.lineRadial)
     ======================================================================== */
     if (viewMode === "radar") {
-      const maxR = 138;
+      const maxR = compact ? 108 : 138;
       const angleStep = (Math.PI * 2) / domains.length;
       const rScale = d3.scaleLinear().domain([0, 100]).range([0, maxR]);
 
@@ -890,11 +913,13 @@ export function HeroScene() {
 
         const sinA = Math.sin(a);
         const cosA = Math.cos(a);
-        const labelR = maxR + (Math.abs(sinA) > 0.75 ? 30 : 52);
-        const lx = cosA * labelR;
+        const labelR = maxR + (Math.abs(sinA) > 0.75 ? 30 : compact ? 42 : 52);
         const ly = sinA * labelR;
         const txt = `${d.shortLabel} · ${d.score}%`;
         const pillW = Math.round(txt.length * 6.5 + 18);
+        // Keep side labels inside the viewBox
+        const maxLx = width / 2 - pillW / 2 - 4;
+        const lx = Math.max(-maxLx, Math.min(maxLx, cosA * labelR));
 
         const pillG = g
           .append("g")
@@ -1010,10 +1035,10 @@ export function HeroScene() {
     /* ========================================================================
        MODE 3: LIVE SIGNAL SPLINE WAVE (d3.area + Traveling Light Particles)
     ======================================================================== */
-    const padL = 44;
-    const padR = 36;
-    const padT = 64;
-    const padB = 76;
+    const padL = compact ? 32 : 44;
+    const padR = compact ? 34 : 36;
+    const padT = compact ? 48 : 64;
+    const padB = compact ? 96 : 76;
     const plotW = width - padL - padR;
     const plotH = height - padT - padB;
 
@@ -1166,10 +1191,13 @@ export function HeroScene() {
         .attr("font-family", "var(--font-mono), monospace")
         .text(`${d.score}%`);
 
+      // Narrow cards stagger axis labels on two rows to avoid collisions
+      const labelY = padT + plotH + 22 + (compact && i % 2 === 1 ? 34 : 0);
+
       const axisLabel = svg
         .append("text")
         .attr("x", x)
-        .attr("y", padT + plotH + 22)
+        .attr("y", labelY)
         .attr("text-anchor", "middle")
         .attr("fill", inkPrimary)
         .attr("font-size", "10.5px")
@@ -1181,7 +1209,7 @@ export function HeroScene() {
       svg
         .append("text")
         .attr("x", x)
-        .attr("y", padT + plotH + 37)
+        .attr("y", labelY + 15)
         .attr("text-anchor", "middle")
         .attr("fill", inkSecondary)
         .attr("font-size", "9.5px")
@@ -1191,9 +1219,9 @@ export function HeroScene() {
       // Invisible interactive column target for silky hover
       const hitRect = svg
         .append("rect")
-        .attr("x", x - 34)
+        .attr("x", x - (compact ? 23 : 34))
         .attr("y", padT - 20)
-        .attr("width", 68)
+        .attr("width", compact ? 46 : 68)
         .attr("height", plotH + 68)
         .attr("fill", "transparent")
         .style("cursor", "pointer");
@@ -1245,7 +1273,8 @@ export function HeroScene() {
     let prev = performance.now();
 
     const tickWave = (now: number) => {
-      const dt = Math.min((now - prev) / 1000, 0.05);
+      // The first frame timestamp can precede `prev`; a negative step would index domains[-1]
+      const dt = Math.max(0, Math.min((now - prev) / 1000, 0.05));
       prev = now;
       if (isVisible && !document.hidden) {
         if (fadeT < 1) {
@@ -1270,12 +1299,12 @@ export function HeroScene() {
       cancelAnimationFrame(rafId);
       io.disconnect();
     };
-  }, [viewMode, domains, isDark, palette]);
+  }, [viewMode, domains, isDark, palette, compact]);
 
   return (
     <div
       ref={hostRef}
-      className="glass-panel relative flex flex-col overflow-hidden rounded-3xl"
+      className="glass-panel @container relative flex flex-col overflow-hidden rounded-3xl"
     >
       <div
         aria-hidden="true"
@@ -1291,7 +1320,7 @@ export function HeroScene() {
         <div className="flex items-center gap-2 font-mono text-xs text-slate-300">
           <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]" />
           <span className="font-semibold text-white">SKILL PULSE</span>
-          <span className="hidden text-slate-400 sm:inline">
+          <span className="hidden text-slate-400 @md:inline">
             · {totalSkills} Production Skills
           </span>
         </div>
@@ -1348,7 +1377,7 @@ export function HeroScene() {
       </div>
 
       {/* Fixed-Height Zero-Reflow Live Telemetry Bar */}
-      <div className="relative z-10 flex h-[78px] flex-col justify-center gap-1 border-t border-white/[0.08] px-4 py-2.5">
+      <div className="relative z-10 flex h-[96px] flex-col justify-center gap-1 border-t border-white/[0.08] px-4 py-2.5">
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
@@ -1359,7 +1388,7 @@ export function HeroScene() {
               )
             }
             title="Jump to this skill in Interactive Capability Constellation"
-            className="group flex min-w-0 items-center gap-2 rounded-lg py-0.5 text-left transition hover:opacity-90"
+            className="group flex min-w-0 flex-1 items-center gap-2 rounded-lg py-0.5 text-left transition hover:opacity-90"
           >
             <span
               ref={dotRef}
@@ -1367,13 +1396,13 @@ export function HeroScene() {
             />
             <span
               ref={titleRef}
-              className="truncate text-xs font-semibold text-white group-hover:underline sm:text-sm"
+              className="min-w-0 truncate text-xs font-semibold text-white group-hover:underline sm:text-sm"
             >
               Laravel 12 · Languages &amp; Backend
             </span>
             <span
               ref={badgeRef}
-              className="chip-accent shrink-0 rounded-md px-2 py-0.5 font-mono text-[10.5px] font-semibold"
+              className="chip-accent hidden shrink-0 rounded-md px-2 py-0.5 font-mono text-[10.5px] font-semibold @md:inline"
             >
               96% · 5.5+ yrs
             </span>
@@ -1386,15 +1415,15 @@ export function HeroScene() {
             className="btn-cool-ghost inline-flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1 font-mono text-[11px] font-semibold text-sky-400"
           >
             <Sparkles className="h-3 w-3 text-amber-400" />
-            <span className="hidden sm:inline">Capability Constellation</span>
-            <span className="sm:hidden">Full Map</span>
+            <span className="hidden @xl:inline">Capability Constellation</span>
+            <span className="@xl:hidden">Full Map</span>
             <ArrowDownRight className="h-3.5 w-3.5" />
           </button>
         </div>
 
         <p
           ref={detailRef}
-          className="truncate font-mono text-[11px] text-slate-400"
+          className="line-clamp-2 font-mono text-[11px] leading-[1.45] text-slate-400"
         >
           Enterprise APIs, AI SDK harness, 28 models &amp; 89 test suites
         </p>
