@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import {
   BrainCircuit,
   Cloud,
@@ -39,6 +39,30 @@ const accentDot: Record<SkillGroup["accent"], string> = {
 
 export function SkillsShowcase() {
   const [selected, setSelected] = useState<string>("all");
+  const mapTopRef = useRef<number | null>(null);
+
+  // The cards sit above the map, so filtering from inside the map changes the
+  // height above it. Remember where the map was so it does not jump away.
+  const selectFromMap = useCallback((id: string) => {
+    const rect = document
+      .getElementById("capability-constellation")
+      ?.getBoundingClientRect();
+    if (rect && rect.top < window.innerHeight && rect.bottom > 0) {
+      mapTopRef.current = rect.top;
+    }
+    setSelected(id);
+  }, []);
+
+  useLayoutEffect(() => {
+    const previousTop = mapTopRef.current;
+    mapTopRef.current = null;
+    const map = document.getElementById("capability-constellation");
+    if (previousTop === null || !map) return;
+    const shift = map.getBoundingClientRect().top - previousTop;
+    if (Math.abs(shift) > 1) {
+      window.scrollBy({ top: shift, behavior: "instant" });
+    }
+  }, [selected]);
 
   const tabs = [
     { id: "all", label: `All Domains (${skillGroups.length})` },
@@ -55,14 +79,11 @@ export function SkillsShowcase() {
 
   return (
     <div className="space-y-6 sm:space-y-10">
-      {/* 1. Interactive D3.js Force-Directed Skill Network */}
-      <D3SkillsGraph activeDomain={selected} onSelectDomain={setSelected} />
-
-      {/* 2. Domain Filter Bar */}
+      {/* 1. Domain Filter Bar */}
       <div
         role="tablist"
         aria-label="Filter technical skills by domain"
-        className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0"
+        className="flex flex-wrap gap-2 sm:gap-2.5"
       >
         {tabs.map((tab) => {
           const active = selected === tab.id;
@@ -73,7 +94,7 @@ export function SkillsShowcase() {
               role="tab"
               aria-selected={active}
               onClick={() => setSelected(tab.id)}
-              className={`relative min-h-[42px] shrink-0 rounded-xl px-4 py-2 text-xs font-semibold sm:text-sm ${
+              className={`relative min-h-[42px] rounded-xl px-3 py-2 text-xs font-semibold sm:px-4 sm:text-sm ${
                 active ? "btn-cool-primary" : "btn-cool-secondary"
               }`}
             >
@@ -83,7 +104,7 @@ export function SkillsShowcase() {
         })}
       </div>
 
-      {/* 3. Skill Clusters */}
+      {/* 2. Skill Clusters: plain, scannable lists for quick review */}
       <div
         className={`grid grid-cols-1 gap-5 ${
           selected === "all"
@@ -100,7 +121,7 @@ export function SkillsShowcase() {
               maxTilt={5.5}
               className="min-w-0 rounded-3xl p-4 sm:p-6"
             >
-              <div className="mb-5 flex items-start justify-between gap-4">
+              <div className="mb-4 flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div
                     className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${accentBadge[group.accent]}`}
@@ -121,33 +142,38 @@ export function SkillsShowcase() {
                 </span>
               </div>
 
-              <div className="flex flex-wrap gap-2.5">
+              <ul
+                className={`grid grid-cols-1 gap-x-8 ${
+                  selected === "all" ? "" : "md:grid-cols-2 xl:grid-cols-3"
+                }`}
+              >
                 {group.items.map((skill) => (
-                  // Tiles sit two-up only when each gets at least 11rem
-                  <div
+                  <li
                     key={skill.name}
-                    className="surface-subcard flex flex-1 basis-44 items-start justify-between gap-3 rounded-xl px-3.5 py-2.5"
+                    className="flex items-start gap-3 border-t border-white/[0.08] py-3"
                   >
-                    <div className="flex items-start gap-2.5">
-                      <span
-                        className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${accentDot[group.accent]}`}
-                      />
-                      <div>
-                        <div className="text-sm font-semibold text-slate-100">
-                          {skill.name}
-                        </div>
-                        <div className="font-mono text-xs text-slate-400">
-                          {skill.context}
-                        </div>
+                    <span
+                      aria-hidden="true"
+                      className={`mt-[7px] h-2 w-2 shrink-0 rounded-full ${accentDot[group.accent]}`}
+                    />
+                    <div className="min-w-0">
+                      <div className="text-[15px] font-semibold leading-snug text-slate-100">
+                        {skill.name}
+                      </div>
+                      <div className="mt-0.5 text-[13px] leading-snug text-slate-400">
+                        {skill.context}
                       </div>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </TiltSpotlightCard>
           );
         })}
       </div>
+
+      {/* 3. Interactive D3.js Force-Directed Skill Network */}
+      <D3SkillsGraph activeDomain={selected} onSelectDomain={selectFromMap} />
     </div>
   );
 }
