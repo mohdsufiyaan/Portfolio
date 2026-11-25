@@ -199,21 +199,15 @@ function computeCurvedPath(
 }
 
 function pointOnQuad(
-  sx: number,
-  sy: number,
-  tx: number,
-  ty: number,
-  curveFactor: number,
+  s: { x: number; y: number },
+  c: { x: number; y: number },
+  e: { x: number; y: number },
   t: number,
 ) {
-  const dx = tx - sx;
-  const dy = ty - sy;
-  const cx = (sx + tx) / 2 - dy * curveFactor;
-  const cy = (sy + ty) / 2 + dx * curveFactor;
   const inv = 1 - t;
   return {
-    x: inv * inv * sx + 2 * inv * t * cx + t * t * tx,
-    y: inv * inv * sy + 2 * inv * t * cy + t * t * ty,
+    x: inv * inv * s.x + 2 * inv * t * c.x + t * t * e.x,
+    y: inv * inv * s.y + 2 * inv * t * c.y + t * t * e.y,
   };
 }
 
@@ -283,13 +277,15 @@ export function D3SkillsGraph({
   }, [onSelectDomain]);
 
   useEffect(() => {
-    const check = () => {
-      const w = window.innerWidth;
-      setViewportMode(w < 640 ? "mobile" : w < 1024 ? "tablet" : "desktop");
-    };
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
+    const host = hostRef.current;
+    if (!host) return;
+    // Layout follows the panel's own width, not the window's
+    const ro = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width;
+      setViewportMode(w < 560 ? "mobile" : w < 1000 ? "tablet" : "desktop");
+    });
+    ro.observe(host);
+    return () => ro.disconnect();
   }, []);
 
   const palette = isDark ? DOMAIN_COLORS_DARK : DOMAIN_COLORS_LIGHT;
@@ -324,19 +320,34 @@ export function D3SkillsGraph({
     if (!svgEl) return;
 
     const isMobile = viewportMode === "mobile";
-    const isTablet = viewportMode === "tablet";
+    // Below desktop width the radial map is unreadable, so domains stack in
+    // columns (2 on phones, 3 on tablets) with their skills listed underneath
+    const isCompact = viewportMode !== "desktop";
+    const skillsPerDomain = isMobile ? 3 : 4;
+    const columns = isMobile ? 2 : 3;
+    const rows = Math.ceil(skillGroups.length / columns);
+    const hubTop = 150;
+    const skillStart = 78;
+    const skillStep = 28;
+    const clusterDepth = skillStart + skillStep * (skillsPerDomain - 1);
+    const rowPitch = clusterDepth + 62;
 
-    // Full-width responsive coordinate space (no side panel -> expansive panoramic view)
-    const width = isMobile ? 640 : isTablet ? 960 : 1320;
-    const height = isMobile ? 580 : isTablet ? 580 : 600;
+    const width = isMobile ? 340 : isCompact ? 720 : 1320;
+    const height = isCompact
+      ? hubTop + (rows - 1) * rowPitch + clusterDepth + 28
+      : 600;
+    const colWidth = width / columns;
     const cx = width / 2;
     const cy = height / 2;
+    const coreY = isCompact ? 44 : cy;
 
-    const hubRx = isMobile ? 106 : isTablet ? 176 : 248;
-    const hubRy = isMobile ? 106 : isTablet ? 128 : 138;
-    const skillRx = isMobile ? 186 : isTablet ? 308 : 448;
-    const skillRy = isMobile ? 206 : isTablet ? 216 : 226;
-    const skillsPerDomain = isMobile ? 3 : 4;
+    const hubRx = 248;
+    const hubRy = 138;
+    const skillRx = 448;
+    const skillRy = 226;
+
+    const compactPillWidth = (label: string) =>
+      Math.round(label.length * 6.7 + 16);
 
     const colors = isDark ? DOMAIN_COLORS_DARK : DOMAIN_COLORS_LIGHT;
     const query = searchQuery.trim().toLowerCase();
@@ -350,14 +361,14 @@ export function D3SkillsGraph({
         context:
           "5.5+ years across Laravel 12, Node.js/Express 5, Next.js 16, React Native & Hybrid RAG AI",
         tier: "core",
-        radius: isMobile ? 28 : 34,
+        radius: isCompact ? 28 : 34,
         color: isDark ? "#38bdf8" : "#0284c7",
         anchorX: cx,
-        anchorY: cy,
+        anchorY: coreY,
         fx: cx,
-        fy: cy,
+        fy: coreY,
         x: cx,
-        y: cy,
+        y: coreY,
         phase: 0,
         angle: 0,
       },
@@ -367,15 +378,16 @@ export function D3SkillsGraph({
 
     const degToRad = (deg: number) => (deg * Math.PI) / 180;
     const desktopOffsetsDeg = [-21, -7, 7, 21];
-    const mobileOffsetsDeg = [-17, 0, 17];
-    const localOffsets = isMobile ? mobileOffsetsDeg : desktopOffsetsDeg;
 
     skillGroups.forEach((group, gIdx) => {
       const color = colors[group.accent];
       const baseAngleDeg = gIdx * 60 - 60;
       const baseAngle = degToRad(baseAngleDeg);
-      const hx = cx + Math.cos(baseAngle) * hubRx;
-      const hy = cy + Math.sin(baseAngle) * hubRy;
+      const colX = colWidth * ((gIdx % columns) + 0.5);
+      const hx = isCompact ? colX : cx + Math.cos(baseAngle) * hubRx;
+      const hy = isCompact
+        ? hubTop + Math.floor(gIdx / columns) * rowPitch
+        : cy + Math.sin(baseAngle) * hubRy;
       const domainId = `domain::${group.id}`;
 
       nodes.push({
@@ -385,7 +397,7 @@ export function D3SkillsGraph({
         group: group.id,
         context: group.subtitle,
         tier: "domain",
-        radius: isMobile ? 19 : 23,
+        radius: isCompact ? 19 : 23,
         color,
         anchorX: hx,
         anchorY: hy,
@@ -423,10 +435,21 @@ export function D3SkillsGraph({
         });
       }
       sliceSkills.forEach((skill, sIdx) => {
-        const offsetDeg = localOffsets[sIdx] ?? 0;
+        const offsetDeg = desktopOffsetsDeg[sIdx] ?? 0;
         const skillAngle = degToRad(baseAngleDeg + offsetDeg);
-        const sx = cx + Math.cos(skillAngle) * skillRx;
-        const sy = cy + Math.sin(skillAngle) * skillRy;
+        // Compact: dots share one rail, with the widest row centred in the column
+        const rowWidth =
+          Math.max(
+            ...sliceSkills.map((s) =>
+              compactPillWidth(conciseSkillLabel(s.name)),
+            ),
+          ) + 16;
+        const sx = isCompact
+          ? colX - rowWidth / 2 + 5
+          : cx + Math.cos(skillAngle) * skillRx;
+        const sy = isCompact
+          ? hy + skillStart + sIdx * skillStep
+          : cy + Math.sin(skillAngle) * skillRy;
         const skillId = `${group.id}::${skill.name}`;
 
         nodes.push({
@@ -436,7 +459,7 @@ export function D3SkillsGraph({
           group: group.id,
           context: skill.context,
           tier: "skill",
-          radius: isMobile ? 6 : 7.2,
+          radius: isCompact ? 5 : 7.2,
           color,
           anchorX: sx,
           anchorY: sy,
@@ -610,7 +633,7 @@ export function D3SkillsGraph({
       .append("g")
       .attr(
         "transform",
-        `translate(${cx}, ${cy}) scale(${zoom}) translate(${-cx}, ${-cy})`,
+        `translate(${cx}, ${coreY}) scale(${zoom}) translate(${-cx}, ${-coreY})`,
       );
 
     // Architectural orbital rings & sector spokes
@@ -618,14 +641,18 @@ export function D3SkillsGraph({
     guideLayer
       .append("circle")
       .attr("cx", cx)
-      .attr("cy", cy)
-      .attr("r", isMobile ? 102 : 155)
+      .attr("cy", coreY)
+      .attr("r", isCompact ? 102 : 155)
       .attr("fill", "url(#constellation-aura)");
 
-    [
-      { rx: hubRx, ry: hubRy, op: isDark ? 0.22 : 0.3, dash: "4 8" },
-      { rx: skillRx, ry: skillRy, op: isDark ? 0.13 : 0.2, dash: "2 10" },
-    ].forEach((ring) => {
+    const rings = isCompact
+      ? []
+      : [
+          { rx: hubRx, ry: hubRy, op: isDark ? 0.22 : 0.3, dash: "4 8" },
+          { rx: skillRx, ry: skillRy, op: isDark ? 0.13 : 0.2, dash: "2 10" },
+        ];
+
+    rings.forEach((ring) => {
       guideLayer
         .append("ellipse")
         .attr("cx", cx)
@@ -638,7 +665,7 @@ export function D3SkillsGraph({
         .attr("stroke-width", 1.1);
     });
 
-    skillGroups.forEach((group, idx) => {
+    (isCompact ? [] : skillGroups).forEach((group, idx) => {
       const ang = degToRad(idx * 60 - 60);
       guideLayer
         .append("line")
@@ -723,7 +750,9 @@ export function D3SkillsGraph({
       .selectAll<SVGGElement, ConstellationNode>("g")
       .data(nodes)
       .join("g")
-      .style("cursor", (d) => (d.tier === "core" ? "pointer" : "grab"))
+      .style("cursor", (d) =>
+        d.tier === "core" || isCompact ? "pointer" : "grab",
+      )
       .attr("opacity", (d) => (isNodeHighlighted(d) ? 1 : 0.18));
 
     // Generous invisible pointer hit target on skill dots to eliminate edge-hover flicker
@@ -830,7 +859,7 @@ export function D3SkillsGraph({
       .attr("text-anchor", "middle")
       .attr("dy", "0.36em")
       .attr("fill", isDark ? "#03101e" : "#ffffff")
-      .attr("font-size", isMobile ? "14px" : "18px")
+      .attr("font-size", isCompact ? "14px" : "18px")
       .attr("font-weight", "800")
       .attr("letter-spacing", "0.04em")
       .attr("font-family", "var(--font-mono), monospace")
@@ -917,11 +946,23 @@ export function D3SkillsGraph({
     const skillSel = nodeSel.filter((d) => d.tier === "skill");
 
     const skillPillLayout = (d: ConstellationNode) => {
+      if (isCompact) {
+        const pillW = compactPillWidth(d.label);
+        const rectX = 11;
+        return {
+          rectX,
+          rectY: -11.5,
+          pillW,
+          pillH: 23,
+          textX: rectX + pillW / 2,
+          textY: 3.8,
+        };
+      }
+
       const cosA = Math.cos(d.angle);
       const sinA = Math.sin(d.angle);
-      const charW = isMobile ? 6.2 : 7.2;
-      const pillW = Math.round(d.label.length * charW + 20);
-      const pillH = isMobile ? 20 : 23;
+      const pillW = Math.round(d.label.length * 7.2 + 20);
+      const pillH = 23;
 
       if (Math.abs(cosA) >= 0.2) {
         const isRight = cosA > 0;
@@ -985,7 +1026,7 @@ export function D3SkillsGraph({
       .attr("x", (d) => skillPillLayout(d).textX)
       .attr("y", (d) => skillPillLayout(d).textY)
       .attr("fill", isDark ? "#e2e8f0" : "#0f172a")
-      .attr("font-size", isMobile ? "9.5px" : "11px")
+      .attr("font-size", "11px")
       .attr("font-weight", "600")
       .attr("font-family", "var(--font-mono), monospace")
       .style("pointer-events", "none");
@@ -997,16 +1038,19 @@ export function D3SkillsGraph({
         d3
           .forceLink<ConstellationNode, ConstellationLink>(coreAndSkillLinks)
           .id((d) => d.id)
-          .strength(0.05),
+          // Link pull would crowd the stacked compact rows
+          .strength(isCompact ? 0 : 0.05),
       )
       .force("x", d3.forceX<ConstellationNode>((d) => d.anchorX).strength(0.84))
       .force("y", d3.forceY<ConstellationNode>((d) => d.anchorY).strength(0.84))
       .velocityDecay(0.42)
       .alphaDecay(0.04);
 
-    const padX = isMobile ? 116 : 158;
+    const padX = isCompact ? 12 : 158;
     const clampX = (x: number) => Math.max(padX, Math.min(width - padX, x));
-    const clampY = (y: number) => Math.max(44, Math.min(height - 44, y));
+    // Compact rows run close to the bottom edge, so they need less padding
+    const padY = isCompact ? 14 : 44;
+    const clampY = (y: number) => Math.max(44, Math.min(height - padY, y));
 
     const drag = d3
       .drag<SVGGElement, ConstellationNode>()
@@ -1029,7 +1073,8 @@ export function D3SkillsGraph({
         d.fy = null;
       });
 
-    nodeSel.call(drag);
+    // Dragging would swallow touch scrolling on the compact layout
+    if (!isCompact) nodeSel.call(drag);
 
     const applyRestingSynergies = () => {
       if (primaryPointed) {
@@ -1146,6 +1191,31 @@ export function D3SkillsGraph({
       };
     };
 
+    // Quadratic control point for a hub or skill link
+    const linkControl = (
+      kind: ConstellationLink["kind"],
+      s: { x: number; y: number },
+      t: { x: number; y: number },
+      i: number,
+    ) => {
+      if (isCompact && kind === "core") {
+        // Run down the central gutter, then branch out to the hub
+        const middleColumn = Math.abs(t.x - cx) < colWidth / 4;
+        if (!middleColumn) return { x: cx, y: t.y };
+        return t.y > hubTop + rowPitch / 2
+          ? { x: cx + colWidth, y: (s.y + t.y) / 2 }
+          : { x: cx, y: (s.y + t.y) / 2 };
+      }
+      // Compact skill links drop down the rail beside the pills
+      if (isCompact) return { x: t.x, y: s.y };
+      const bend =
+        (kind === "core" ? 0.065 : 0.095) * (i % 2 === 0 ? 1 : -1);
+      return {
+        x: (s.x + t.x) / 2 - (t.y - s.y) * bend,
+        y: (s.y + t.y) / 2 + (t.x - s.x) * bend,
+      };
+    };
+
     const renderFrame = () => {
       const posMap = new Map<string, { x: number; y: number }>();
       nodes.forEach((n) => posMap.set(n.id, getPos(n)));
@@ -1155,11 +1225,8 @@ export function D3SkillsGraph({
         const tId = resolveNode(d.target)?.id ?? "";
         const s = posMap.get(sId) ?? { x: cx, y: cy };
         const t = posMap.get(tId) ?? { x: cx, y: cy };
-        const bend =
-          d.kind === "core"
-            ? 0.065 * (i % 2 === 0 ? 1 : -1)
-            : 0.095 * (i % 2 === 0 ? 1 : -1);
-        return computeCurvedPath(s.x, s.y, t.x, t.y, bend);
+        const c = linkControl(d.kind, s, t, i);
+        return `M ${s.x.toFixed(1)} ${s.y.toFixed(1)} Q ${c.x.toFixed(1)} ${c.y.toFixed(1)} ${t.x.toFixed(1)} ${t.y.toFixed(1)}`;
       });
 
       synergySel.attr("d", (d, i) => {
@@ -1191,12 +1258,8 @@ export function D3SkillsGraph({
         const tId = resolveNode(d.target)?.id ?? "";
         const s = posMap.get(sId) ?? { x: cx, y: cy };
         const t = posMap.get(tId) ?? { x: cx, y: cy };
-        const bend =
-          d.kind === "core"
-            ? 0.065 * (i % 2 === 0 ? 1 : -1)
-            : 0.095 * (i % 2 === 0 ? 1 : -1);
         const progress = (floatPhase * 0.28 + i * 0.19) % 1;
-        const pt = pointOnQuad(s.x, s.y, t.x, t.y, bend, progress);
+        const pt = pointOnQuad(s, linkControl(d.kind, s, t, i), t, progress);
         d3.select(this).attr("cx", pt.x.toFixed(1)).attr("cy", pt.y.toFixed(1));
       });
     };
@@ -1282,10 +1345,10 @@ export function D3SkillsGraph({
         </div>
 
         {/* Search + Interactive Controls */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <label
             htmlFor="skill-spotlight-search"
-            className={`search-field-shell h-10 rounded-xl pl-1.5 pr-2.5 ${
+            className={`search-field-shell h-10 min-w-0 basis-full rounded-xl pl-1.5 pr-2.5 sm:basis-auto ${
               searchQuery.trim() ? "search-field-active" : ""
             }`}
           >
@@ -1300,7 +1363,7 @@ export function D3SkillsGraph({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Spotlight skill (Redis, RAG)..."
               aria-label="Search skills in capability map"
-              className="search-field-input w-40 text-xs font-medium sm:w-52"
+              className="search-field-input w-full min-w-0 text-xs font-medium sm:w-52"
             />
             {searchQuery.trim() && (
               <span
@@ -1392,7 +1455,7 @@ export function D3SkillsGraph({
       </div>
 
       {/* Quick Domain Filter Strip */}
-      <div className="relative z-10 flex items-center gap-1.5 overflow-x-auto border-b border-white/[0.06] px-4 py-2.5 sm:px-6">
+      <div className="relative z-10 flex items-center gap-1.5 overflow-x-auto border-b border-white/[0.06] px-4 py-2.5 sm:flex-wrap sm:px-6">
         <button
           type="button"
           onClick={() => onSelectDomain("all")}
@@ -1444,8 +1507,9 @@ export function D3SkillsGraph({
             ref={idleHintRef}
             className="truncate font-mono text-xs text-slate-400"
           >
-            Hover any node to inspect production details · Click any domain hub
-            to filter skills below
+            {viewportMode === "desktop"
+              ? "Hover any node to inspect production details · Click any domain hub to filter skills below"
+              : "Tap any node for details"}
           </span>
 
           <div
@@ -1459,7 +1523,7 @@ export function D3SkillsGraph({
             />
             <span
               ref={hoverTitleRef}
-              className="shrink-0 font-mono text-xs font-semibold text-white"
+              className="min-w-0 truncate font-mono text-xs font-semibold text-white"
             />
             <span className="hidden text-slate-500 sm:inline">·</span>
             <span
@@ -1474,7 +1538,7 @@ export function D3SkillsGraph({
           </div>
         </div>
 
-        <span className="shrink-0 font-mono text-xs text-sky-400">
+        <span className="hidden shrink-0 font-mono text-xs text-sky-400 sm:inline">
           {paused
             ? "Orbit Paused"
             : showSynergies
