@@ -122,6 +122,35 @@ export const profile = {
 
 export const profiles = [profile.github, profile.linkedin];
 
+// Banner skill summary. "5.5+ yrs" = used in both roles (Jan 2021 onwards);
+// "Since 2024" = documented from the May 2024 role onwards.
+export const heroSkills = [
+  {
+    area: "PHP Backend",
+    experience: "5.5+ yrs",
+    primary: true,
+    stack: "PHP, Laravel, MySQL, REST APIs",
+  },
+  {
+    area: "Node.js & Real-Time",
+    experience: "Since 2024",
+    primary: false,
+    stack: "Node.js, Express, PostgreSQL, Redis, Socket.IO, BullMQ",
+  },
+  {
+    area: "AI & LLM Systems",
+    experience: "Since 2024",
+    primary: false,
+    stack: "LLM agents, Hybrid RAG, Pinecone, Laravel AI SDK",
+  },
+  {
+    area: "Web, Mobile & Cloud",
+    experience: "Since 2024",
+    primary: false,
+    stack: "Next.js, React Native, TypeScript, AWS",
+  },
+];
+
 export const heroMetrics = [
   {
     value: "5.5+",
