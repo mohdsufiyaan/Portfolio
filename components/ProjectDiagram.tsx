@@ -38,19 +38,25 @@ export function ProjectDiagram({ type, compact = false }: ProjectDiagramProps) {
   const violet = isDark ? "#a78bfa" : "#7c3aed";
   const violetLabel = isDark ? "#c4b5fd" : "#6d28d9";
 
+  // Shown only when the diagram is wider than its card
+  const swipeHint = `pointer-events-none absolute bottom-1.5 right-3 z-20 font-mono text-[10px] @min-[460px]:hidden ${
+    isDark ? "text-slate-400" : "text-slate-600"
+  }`;
+
   switch (type) {
     case "ai-ops":
       return (
         <div
-          className={`relative ${heightClass} w-full overflow-hidden rounded-2xl border p-4 ${shell}`}
+          className={`@container relative ${heightClass} w-full overflow-hidden rounded-2xl border p-4 ${shell}`}
         >
           <div className="bg-dot-matrix pointer-events-none absolute inset-0 opacity-35" />
           <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-sky-500/15 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-10 left-8 h-32 w-32 rounded-full bg-amber-500/12 blur-3xl" />
 
+          <div className="relative z-10 h-full w-full overflow-x-auto overflow-y-hidden">
           <svg
             viewBox="0 0 560 220"
-            className="relative z-10 h-full w-full"
+            className="h-full w-full min-w-[460px]"
             role="img"
             aria-label="Enterprise AI Operations architecture: Autonomous Agent connected to Hybrid RAG and Multi-LLM Failover Gateway"
           >
@@ -84,21 +90,26 @@ export function ProjectDiagram({ type, compact = false }: ProjectDiagramProps) {
             <text x="472" y="164" textAnchor="middle" fill={emeraldLabel} fontSize="11" fontWeight="600">MS365 &amp; Workspace</text>
             <text x="472" y="180" textAnchor="middle" fill={inkSub} fontSize="9.5" fontFamily="monospace">AES-256 · 24h Undo · EOD</text>
           </svg>
+          </div>
+          <span aria-hidden="true" className={swipeHint}>
+            Swipe →
+          </span>
         </div>
       );
 
     case "realtime":
       return (
         <div
-          className={`relative ${heightClass} w-full overflow-hidden rounded-2xl border p-4 ${shell}`}
+          className={`@container relative ${heightClass} w-full overflow-hidden rounded-2xl border p-4 ${shell}`}
         >
           <div className="bg-dot-matrix pointer-events-none absolute inset-0 opacity-35" />
           <div className="pointer-events-none absolute -left-10 top-6 h-36 w-36 rounded-full bg-emerald-500/14 blur-3xl" />
           <div className="pointer-events-none absolute bottom-2 right-6 h-32 w-32 rounded-full bg-cyan-500/14 blur-3xl" />
 
+          <div className="relative z-10 h-full w-full overflow-x-auto overflow-y-hidden">
           <svg
             viewBox="0 0 560 220"
-            className="relative z-10 h-full w-full"
+            className="h-full w-full min-w-[460px]"
             role="img"
             aria-label="Real-time booking architecture with Express 5 API, Socket.IO Redis Adapter, BullMQ queues, PostgreSQL, and AWS S3"
           >
@@ -135,21 +146,26 @@ export function ProjectDiagram({ type, compact = false }: ProjectDiagramProps) {
             <text x="474" y="166" textAnchor="middle" fill={emeraldLabel} fontSize="11" fontWeight="600">PostgreSQL + S3</text>
             <text x="474" y="182" textAnchor="middle" fill={inkSub} fontSize="9.5" fontFamily="monospace">Prisma ORM · Direct Upload</text>
           </svg>
+          </div>
+          <span aria-hidden="true" className={swipeHint}>
+            Swipe →
+          </span>
         </div>
       );
 
     case "mobile-app":
       return (
         <div
-          className={`relative ${heightClass} w-full overflow-hidden rounded-2xl border p-4 ${shell}`}
+          className={`@container relative ${heightClass} w-full overflow-hidden rounded-2xl border p-4 ${shell}`}
         >
           <div className="bg-dot-matrix pointer-events-none absolute inset-0 opacity-35" />
           <div className="pointer-events-none absolute -right-10 top-4 h-36 w-36 rounded-full bg-violet-500/16 blur-3xl" />
           <div className="pointer-events-none absolute bottom-0 left-6 h-32 w-32 rounded-full bg-sky-500/14 blur-3xl" />
 
+          <div className="relative z-10 h-full w-full overflow-x-auto overflow-y-hidden">
           <svg
             viewBox="0 0 560 220"
-            className="relative z-10 h-full w-full"
+            className="h-full w-full min-w-[460px]"
             role="img"
             aria-label="On-Demand Dual-Role Mobile Suite React Native 0.87 architecture"
           >
@@ -183,19 +199,24 @@ export function ProjectDiagram({ type, compact = false }: ProjectDiagramProps) {
             <text x="475" y="166" textAnchor="middle" fill={amberLabel} fontSize="11" fontWeight="600">Crash Recovery &amp; Gate</text>
             <text x="475" y="182" textAnchor="middle" fill={inkSub} fontSize="9.5" fontFamily="monospace">Error Boundary · Updates</text>
           </svg>
+          </div>
+          <span aria-hidden="true" className={swipeHint}>
+            Swipe →
+          </span>
         </div>
       );
 
     case "m3m":
       return (
         <div
-          className={`relative ${heightClass} w-full overflow-hidden rounded-2xl border p-4 ${shell}`}
+          className={`@container relative ${heightClass} w-full overflow-hidden rounded-2xl border p-4 ${shell}`}
         >
           <div className="bg-dot-matrix pointer-events-none absolute inset-0 opacity-30" />
           <div className="pointer-events-none absolute right-0 top-0 h-36 w-36 rounded-full bg-amber-500/14 blur-3xl" />
+          <div className="relative z-10 h-full w-full overflow-x-auto overflow-y-hidden">
           <svg
             viewBox="0 0 560 200"
-            className="relative z-10 h-full w-full"
+            className="h-full w-full min-w-[460px]"
             role="img"
             aria-label="M3MIndia.com edge delivery architecture with AWS CloudFront, S3, Laravel, and OTP lead verification"
           >
@@ -218,19 +239,24 @@ export function ProjectDiagram({ type, compact = false }: ProjectDiagramProps) {
             <text x="471" y="104" textAnchor="middle" fill={inkTitle} fontSize="13" fontWeight="700">OTP Verification</text>
             <text x="471" y="124" textAnchor="middle" fill={inkSub} fontSize="9.5" fontFamily="monospace">MySQL · Auto Backups</text>
           </svg>
+          </div>
+          <span aria-hidden="true" className={swipeHint}>
+            Swipe →
+          </span>
         </div>
       );
 
     case "capital-bank":
       return (
         <div
-          className={`relative ${heightClass} w-full overflow-hidden rounded-2xl border p-4 ${shell}`}
+          className={`@container relative ${heightClass} w-full overflow-hidden rounded-2xl border p-4 ${shell}`}
         >
           <div className="bg-dot-matrix pointer-events-none absolute inset-0 opacity-30" />
           <div className="pointer-events-none absolute bottom-0 left-10 h-32 w-32 rounded-full bg-sky-500/16 blur-3xl" />
+          <div className="relative z-10 h-full w-full overflow-x-auto overflow-y-hidden">
           <svg
             viewBox="0 0 560 200"
-            className="relative z-10 h-full w-full"
+            className="h-full w-full min-w-[460px]"
             role="img"
             aria-label="Capital.bank.in digital banking architecture"
           >
@@ -253,6 +279,10 @@ export function ProjectDiagram({ type, compact = false }: ProjectDiagramProps) {
             <text x="471" y="104" textAnchor="middle" fill={inkTitle} fontSize="13" fontWeight="700">3rd-Party APIs</text>
             <text x="471" y="124" textAnchor="middle" fill={inkSub} fontSize="9.5" fontFamily="monospace">Linux · Apache / Nginx</text>
           </svg>
+          </div>
+          <span aria-hidden="true" className={swipeHint}>
+            Swipe →
+          </span>
         </div>
       );
 
@@ -291,7 +321,7 @@ export function ProjectDiagram({ type, compact = false }: ProjectDiagramProps) {
 
       return (
         <div
-          className={`relative ${heightClass} flex w-full flex-col justify-between overflow-hidden rounded-2xl border p-4 ${shell}`}
+          className={`@container relative ${heightClass} flex w-full flex-col justify-between overflow-hidden rounded-2xl border p-4 ${shell}`}
         >
           <div className="bg-dot-matrix pointer-events-none absolute inset-0 opacity-30" />
           <div className="relative z-10 flex items-center justify-between">
