@@ -216,7 +216,7 @@ export function QuickDock() {
         >
           <Command className="h-3.5 w-3.5 text-sky-400" />
           <span className="hidden sm:inline">Quick Jump</span>
-          <kbd className="chip-neutral rounded-md px-1.5 py-0.5 text-[10px]">
+          <kbd className="chip-neutral hidden rounded-md px-1.5 py-0.5 text-[10px] sm:inline">
             Ctrl K
           </kbd>
         </button>
