@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
-  ArrowRight,
   Award,
   Briefcase,
   Cpu,
-  Download,
-  Eye,
   GraduationCap,
-  MapPin,
   Shield,
   Sparkles,
   Terminal,
@@ -18,7 +13,6 @@ import {
   achievements,
   experience,
   faqs,
-  heroMetrics,
   origin,
   profile,
   profiles,
@@ -26,12 +20,10 @@ import {
   skillGroups,
 } from "./data";
 import { getGitHubPortfolioData } from "../lib/github";
-import { HeroScene } from "../components/HeroScene";
+import { HeroBanner } from "../components/HeroBanner";
 import { Reveal } from "../components/Reveal";
 import {
-  AnimatedStat,
   ScrollDepthFrame,
-  ScrollParallax,
   ScrollTimelineWrapper,
   TiltSpotlightCard,
 } from "../components/ScrollMotion";
@@ -159,135 +151,9 @@ export default async function HomePage() {
       />
 
       {/* ================================================================
-          1. HERO SECTION (3D Neural Core + Impact Telemetry Strip)
+          1. HERO BANNER (profile summary, core skills, impact numbers)
       ================================================================ */}
-      <section
-        aria-label="Introduction"
-        className={`relative ${CONTAINER} pb-12 pt-24 sm:pb-16 sm:pt-32 lg:pb-20 lg:pt-36`}
-      >
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-10">
-          {/* Left Narrative */}
-          <div className="min-w-0 lg:col-span-7">
-            <Reveal delay={0.02} direction="left">
-              <div className="chip-accent inline-flex flex-wrap items-center gap-2 rounded-full px-3.5 py-1.5 font-mono text-xs font-medium">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]" />
-                <span>{profile.role}</span>
-                <span className="hidden opacity-50 min-[360px]:inline">·</span>
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  Noida, India
-                </span>
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.08} direction="up">
-              <h1 className="mt-5 text-balance text-[clamp(1.75rem,7.4vw,3rem)] font-semibold leading-[1.14] tracking-[-0.025em] text-white sm:mt-6 lg:text-[clamp(2.25rem,3.9vw,3.75rem)] lg:leading-[1.08]">
-                Engineering{" "}
-                <span className="text-gradient-hero inline-block">
-                  Scalable Platforms
-                </span>
-                <br />
-                &amp; Autonomous AI Systems.
-              </h1>
-            </Reveal>
-
-            <Reveal delay={0.14} direction="up">
-              <p className="mt-5 max-w-[60ch] text-[15px] leading-[1.7] text-slate-300 sm:mt-6 sm:text-lg">
-                I&apos;m{" "}
-                <strong className="font-semibold text-white">
-                  {profile.name}
-                </strong>
-                , a full-stack engineer with{" "}
-                <strong className="font-semibold text-white">5.5+ years</strong>{" "}
-                architecting production Laravel, Node.js, Next.js, and React
-                Native systems—from horizontally scaled WebSocket &amp; queue
-                backends to a{" "}
-                <span className="font-medium text-sky-400">
-                  39-tool Autonomous LLM Agent
-                </span>{" "}
-                and Hybrid RAG pipelines.
-              </p>
-            </Reveal>
-
-            <Reveal delay={0.2} direction="up">
-              <div className="mt-7 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:mt-8 sm:flex sm:flex-wrap sm:items-center">
-                <a
-                  href="#skills"
-                  className="btn-cool-primary inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold min-[420px]:col-span-2"
-                >
-                  Explore Skills
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-
-                <Link
-                  href="/resume"
-                  className="btn-cool-secondary inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold sm:px-5"
-                >
-                  <Eye className="h-4 w-4 text-sky-400" />
-                  Review Resume PDF
-                </Link>
-
-                <a
-                  href={profile.resumePath}
-                  download="Mohd_Sufiyan_Resume.pdf"
-                  className="btn-cool-ghost inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold"
-                >
-                  <Download className="h-4 w-4 text-sky-400" />
-                  Download
-                </a>
-              </div>
-            </Reveal>
-          </div>
-
-          {/* Right Interactive 3D Neural Systems Core */}
-          <Reveal
-            delay={0.14}
-            direction="scale"
-            className="mx-auto w-full min-w-0 max-w-[640px] lg:col-span-5 lg:max-w-none"
-          >
-            <ScrollParallax offset={24}>
-              <HeroScene />
-            </ScrollParallax>
-          </Reveal>
-        </div>
-
-        {/* Animated Impact Telemetry Strip (Three.js Corner-Bow Cards) */}
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:mt-14 sm:gap-4 lg:grid-cols-4">
-          {heroMetrics.map((metric, idx) => (
-            <Reveal key={metric.label} delay={0.05 * idx} direction="up">
-              <TiltSpotlightCard
-                accent={
-                  idx === 1
-                    ? "amber"
-                    : idx === 2
-                      ? "emerald"
-                      : idx === 3
-                        ? "violet"
-                        : "cyan"
-                }
-                maxTilt={7.5}
-                className="h-full rounded-2xl p-4 sm:p-5"
-              >
-                <div className="font-mono text-2xl font-bold tracking-tight text-white sm:text-[2.15rem]">
-                  <AnimatedStat
-                    target={metric.numericTarget}
-                    prefix={metric.prefix ?? ""}
-                    suffix={metric.suffix}
-                    decimals={metric.decimals}
-                    fallback={metric.value}
-                  />
-                </div>
-                <div className="mt-2 text-sm font-semibold text-slate-200">
-                  {metric.label}
-                </div>
-                <div className="mt-1 font-mono text-xs text-slate-400">
-                  {metric.detail}
-                </div>
-              </TiltSpotlightCard>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+      <HeroBanner className={CONTAINER} />
 
       {/* ================================================================
           2. HIGHLIGHTED TECHNICAL SKILLS + D3.JS FORCE NETWORK
