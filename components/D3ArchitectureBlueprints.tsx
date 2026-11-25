@@ -1796,13 +1796,22 @@ export function D3ArchitectureBlueprints({
         </div>
 
         {/* Interactive System Diagram Canvas */}
-        <div className="relative z-10 w-full px-3 pt-4 sm:px-6">
-          <svg
-            ref={svgRef}
-            className="mx-auto block h-auto w-full max-w-[980px] select-none"
-            role="img"
-            aria-label={`Interactive system architecture blueprint for ${blueprint.title} (${currentView.label})`}
-          />
+        <div className="@container relative z-10 w-full px-3 pt-4 sm:px-6">
+          {/* Below 720px the diagram scrolls sideways instead of shrinking */}
+          <div className="overflow-x-auto pb-2">
+            <svg
+              ref={svgRef}
+              className="mx-auto block h-auto w-full min-w-[720px] max-w-[980px] select-none"
+              role="img"
+              aria-label={`Interactive system architecture blueprint for ${blueprint.title} (${currentView.label})`}
+            />
+          </div>
+          <p
+            aria-hidden="true"
+            className="pb-2 text-center font-mono text-[11px] text-slate-400 @min-[720px]:hidden"
+          >
+            Swipe sideways to see the full diagram →
+          </p>
         </div>
 
         {/* Live Node Inspector Drawer */}
