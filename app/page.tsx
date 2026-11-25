@@ -163,16 +163,16 @@ export default async function HomePage() {
       ================================================================ */}
       <section
         aria-label="Introduction"
-        className={`relative ${CONTAINER} pb-16 pt-28 sm:pt-32 lg:pb-20 lg:pt-36`}
+        className={`relative ${CONTAINER} pb-12 pt-24 sm:pb-16 sm:pt-32 lg:pb-20 lg:pt-36`}
       >
-        <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-10">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-10">
           {/* Left Narrative */}
-          <div className="lg:col-span-7">
+          <div className="min-w-0 lg:col-span-7">
             <Reveal delay={0.02} direction="left">
               <div className="chip-accent inline-flex flex-wrap items-center gap-2 rounded-full px-3.5 py-1.5 font-mono text-xs font-medium">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]" />
                 <span>{profile.role}</span>
-                <span className="opacity-50">·</span>
+                <span className="hidden opacity-50 min-[360px]:inline">·</span>
                 <span className="inline-flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
                   Noida, India
@@ -181,16 +181,18 @@ export default async function HomePage() {
             </Reveal>
 
             <Reveal delay={0.08} direction="up">
-              <h1 className="mt-6 text-3xl font-semibold tracking-[-0.025em] text-white sm:text-5xl lg:text-[3.5rem] lg:leading-[1.08]">
+              <h1 className="mt-5 text-balance text-[clamp(1.75rem,7.4vw,3rem)] font-semibold leading-[1.14] tracking-[-0.025em] text-white sm:mt-6 lg:text-[clamp(2.25rem,3.9vw,3.75rem)] lg:leading-[1.08]">
                 Engineering{" "}
-                <span className="text-gradient-hero">Scalable Platforms</span>
+                <span className="text-gradient-hero inline-block">
+                  Scalable Platforms
+                </span>
                 <br />
                 &amp; Autonomous AI Systems.
               </h1>
             </Reveal>
 
             <Reveal delay={0.14} direction="up">
-              <p className="mt-6 max-w-[60ch] text-base leading-[1.7] text-slate-300 sm:text-lg">
+              <p className="mt-5 max-w-[60ch] text-[15px] leading-[1.7] text-slate-300 sm:mt-6 sm:text-lg">
                 I&apos;m{" "}
                 <strong className="font-semibold text-white">
                   {profile.name}
@@ -208,10 +210,10 @@ export default async function HomePage() {
             </Reveal>
 
             <Reveal delay={0.2} direction="up">
-              <div className="mt-8 flex flex-wrap items-center gap-3">
+              <div className="mt-7 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:mt-8 sm:flex sm:flex-wrap sm:items-center">
                 <a
                   href="#skills"
-                  className="btn-cool-primary inline-flex min-h-[46px] items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
+                  className="btn-cool-primary inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold min-[420px]:col-span-2"
                 >
                   Explore Skills
                   <ArrowRight className="h-4 w-4" />
@@ -219,7 +221,7 @@ export default async function HomePage() {
 
                 <Link
                   href="/resume"
-                  className="btn-cool-secondary inline-flex min-h-[46px] items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
+                  className="btn-cool-secondary inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold sm:px-5"
                 >
                   <Eye className="h-4 w-4 text-sky-400" />
                   Review Resume PDF
@@ -228,7 +230,7 @@ export default async function HomePage() {
                 <a
                   href={profile.resumePath}
                   download="Mohd_Sufiyan_Resume.pdf"
-                  className="btn-cool-ghost inline-flex min-h-[46px] items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold"
+                  className="btn-cool-ghost inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold"
                 >
                   <Download className="h-4 w-4 text-sky-400" />
                   Download
@@ -238,7 +240,11 @@ export default async function HomePage() {
           </div>
 
           {/* Right Interactive 3D Neural Systems Core */}
-          <Reveal delay={0.14} direction="scale" className="lg:col-span-5">
+          <Reveal
+            delay={0.14}
+            direction="scale"
+            className="mx-auto w-full min-w-0 max-w-[640px] lg:col-span-5 lg:max-w-none"
+          >
             <ScrollParallax offset={24}>
               <HeroScene />
             </ScrollParallax>
@@ -246,7 +252,7 @@ export default async function HomePage() {
         </div>
 
         {/* Animated Impact Telemetry Strip (Three.js Corner-Bow Cards) */}
-        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:mt-14 sm:gap-4 lg:grid-cols-4">
           {heroMetrics.map((metric, idx) => (
             <Reveal key={metric.label} delay={0.05 * idx} direction="up">
               <TiltSpotlightCard
@@ -260,9 +266,9 @@ export default async function HomePage() {
                         : "cyan"
                 }
                 maxTilt={7.5}
-                className="h-full rounded-2xl p-5"
+                className="h-full rounded-2xl p-4 sm:p-5"
               >
-                <div className="font-mono text-3xl font-bold tracking-tight text-white sm:text-[2.15rem]">
+                <div className="font-mono text-2xl font-bold tracking-tight text-white sm:text-[2.15rem]">
                   <AnimatedStat
                     target={metric.numericTarget}
                     prefix={metric.prefix ?? ""}
@@ -292,7 +298,7 @@ export default async function HomePage() {
         className={`${CONTAINER} border-t border-white/[0.08] py-16 sm:py-20 lg:py-24`}
       >
         <Reveal direction="up">
-          <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div className="mb-8 flex flex-col justify-between gap-4 sm:mb-10 lg:flex-row lg:items-end">
             <div className="max-w-2xl">
               <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
                 01 // Interactive Capability Map &amp; Technical Stack
