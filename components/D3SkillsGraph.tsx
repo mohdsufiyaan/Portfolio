@@ -1312,7 +1312,7 @@ export function D3SkillsGraph({
     <div
       id="capability-constellation"
       ref={hostRef}
-      className={`glass-panel relative mb-8 scroll-mt-24 overflow-hidden rounded-3xl transition-shadow duration-500 ${
+      className={`glass-panel relative scroll-mt-24 overflow-hidden rounded-3xl transition-shadow duration-500 ${
         focusPulse
           ? "ring-2 ring-sky-400/75 shadow-[0_0_52px_rgba(56,189,248,0.24)]"
           : ""
@@ -1508,7 +1508,7 @@ export function D3SkillsGraph({
             className="truncate font-mono text-xs text-slate-400"
           >
             {viewportMode === "desktop"
-              ? "Hover any node to inspect production details · Click any domain hub to filter skills below"
+              ? "Hover any node to inspect production details · Click any domain hub to filter the skills above"
               : "Tap any node for details"}
           </span>
 
