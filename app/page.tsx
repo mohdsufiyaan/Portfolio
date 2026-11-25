@@ -301,7 +301,7 @@ export default async function HomePage() {
           <div className="mb-8 flex flex-col justify-between gap-4 sm:mb-10 lg:flex-row lg:items-end">
             <div className="max-w-2xl">
               <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
-                01 // Interactive Capability Map &amp; Technical Stack
+                01 // Technical Stack &amp; Capability Map
               </p>
               <h2
                 id="skills-heading"
@@ -314,8 +314,8 @@ export default async function HomePage() {
               </h2>
             </div>
             <p className="max-w-[42ch] text-sm leading-relaxed text-slate-400 sm:text-[15px]">
-              Explore the interactive capability constellation, drag nodes to
-              inspect cross-stack synergies, or filter by engineering domain.
+              Browse skills by engineering domain, then explore how they connect
+              in the interactive capability map.
             </p>
           </div>
         </Reveal>
