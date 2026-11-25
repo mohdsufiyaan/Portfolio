@@ -114,6 +114,10 @@ export function D3GitHubShowcase({ data }: { data: GitHubPortfolioData }) {
     svg.selectAll("*").remove();
     svg.attr("viewBox", `0 0 ${width} ${height}`);
 
+    // On narrow screens the calendar scrolls; start at the most recent weeks
+    const scroller = svgEl.parentElement;
+    if (scroller) scroller.scrollLeft = scroller.scrollWidth;
+
     const dayLabels = ["", "Mon", "", "Wed", "", "Fri", ""];
     svg
       .append("g")
